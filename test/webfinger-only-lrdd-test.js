@@ -16,24 +16,33 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-var assert = require("assert"),
-    vows = require("vows"),
+var assert = require("node:assert"),
     express = require("express"),
     https = require("https"),
     wf = require("../lib/webfinger"),
     fs = require("fs"),
     path = require("path");
 
+var {describe, it, before, after} = require("node:test");
+var {listen, closeServers} = require("./helpers/servers");
+
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
-var suite = vows.describe("RFC6415 (host-meta) interface");
+describe("RFC6415 (host-meta) interface", function() {
+    describe("When we run an HTTPS app that just supports Webfinger", function() {
+        var err, app;
+        var servers = [];
 
-suite.addBatch({
-    "When we run an HTTPS app that just supports Webfinger": {
-        topic: function() {
-            var app = express(),
-                opts,
-                callback = this.callback;
+        before(function(context, done) {
+            var onResult = function(error, value1) {
+                err = error;
+                app = value1;
+                done(error);
+            };
+
+            app = express();
+            var opts;
+            var callback = onResult;
 
             app.get("/.well-known/webfinger", function(req, res) {
                 var uri = req.query.resource,
@@ -59,26 +68,34 @@ suite.addBatch({
             app.on("error", function(err) {
                 callback(err, null);
             });
-            
+
             opts = {key: fs.readFileSync(path.join(__dirname, "data", "localhost.key")),
                     cert: fs.readFileSync(path.join(__dirname, "data", "localhost.crt"))};
 
-            https.createServer(opts, app).listen(443, function() {
-                callback(null, app);
+            listen(servers, https.createServer(opts, app), 443, function(err) {
+                callback(err, app);
             });
-        },
-        "it works": function(err, app) {
+        }, {timeout: 10000});
+
+        after(function() {
+            return closeServers(servers);
+        });
+
+        it("it works", function() {
             assert.ifError(err);
-        },
-        teardown: function(app) {
-            if (app && app.close) {
-                app.close();
-            }
-        },
-        "and we do LRDD discovery": {
-            topic: function() {
-                var callback = this.callback;
-                    
+        });
+
+        describe("and we do LRDD discovery", function() {
+            var err;
+
+            before(function(context, done) {
+                var onResult = function(error) {
+                    err = error;
+                    done(error);
+                };
+
+                var callback = onResult;
+
                 wf.lrdd("alice@localhost", function(err, jrd) {
                     if (err) {
                         callback(null);
@@ -86,12 +103,11 @@ suite.addBatch({
                         callback(new Error("Unexpected success"));
                     }
                 });
-            },
-            "it fails correctly": function(err) {
-                assert.ifError(err);
-            }
-        }
-    }
-});
+            }, {timeout: 10000});
 
-suite["export"](module);
+            it("it fails correctly", function() {
+                assert.ifError(err);
+            });
+        });
+    });
+});

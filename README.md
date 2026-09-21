@@ -113,6 +113,10 @@ webfinger or a hostname, call this and we'll do it for you.
 
 ## Testing
 
+Use Node.js 22 to run the tests with the built-in Node Test Runner. The
+package's runtime engine range is broader than the test tooling supports.
+Test files run sequentially because they share the same server ports.
+
 The tests set up servers that listen on ports 80 and 443. On most
 Unix-like systems, you have to be root to listen on ports below 1024 or whatever.
 

@@ -16,37 +16,32 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-var assert = require("assert"),
-    vows = require("vows"),
-    express = require("express"),
+var assert = require("node:assert"),
     wf = require("../lib/webfinger");
 
-var suite = vows.describe("Test hostmeta for bad domain");
+var {describe, it, before} = require("node:test");
 
-var badDomain = function(domain) {
-    return {
-        topic: function() {
-            var callback = this.callback;
-            wf.hostmeta(domain, function(err, jrd) {
-                if (err) {
-                    callback(null);
-                } else {
-                    callback(new Error("Unexpected success!"));
-                }
+describe("Test hostmeta for bad domain", function() {
+    [
+        ["When we get host-meta data for a .invalid domain", "host-meta.invalid"],
+        ["When we get host-meta data for a .example domain", "host-meta.example"],
+        ["When we get host-meta data for example.com", "example.com"],
+        ["When we get host-meta data for example.org", "example.org"],
+        ["When we get host-meta data for example.net", "example.net"]
+    ].forEach(function([name, domain]) {
+        describe(name, function() {
+            var err;
+
+            before(function(context, done) {
+                wf.hostmeta(domain, function(error) {
+                    err = error ? null : new Error("Unexpected success!");
+                    done(err);
+                });
+            }, {timeout: 10000});
+
+            it("it works", function() {
+                assert.ifError(err);
             });
-        },
-        "it works": function(err, jrd) {
-            assert.ifError(err);
-        }
-    };
-};
-
-suite.addBatch({
-    "When we get host-meta data for a .invalid domain": badDomain("host-meta.invalid"),
-    "When we get host-meta data for a .example domain": badDomain("host-meta.example"),
-    "When we get host-meta data for example.com": badDomain("example.com"),
-    "When we get host-meta data for example.org": badDomain("example.org"),
-    "When we get host-meta data for example.net": badDomain("example.net")
+        });
+    });
 });
-
-suite["export"](module);

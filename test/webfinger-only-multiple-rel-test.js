@@ -16,24 +16,33 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-var assert = require("assert"),
-    vows = require("vows"),
+var assert = require("node:assert"),
     express = require("express"),
     https = require("https"),
     wf = require("../lib/webfinger"),
     fs = require("fs"),
     path = require("path");
 
+var {describe, it, before, after} = require("node:test");
+var {listen, closeServers} = require("./helpers/servers");
+
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
-var suite = vows.describe("RFC6415 (host-meta) interface");
+describe("RFC6415 (host-meta) interface", function() {
+    describe("When we run an HTTPS app that just supports Webfinger", function() {
+        var err, app;
+        var servers = [];
 
-suite.addBatch({
-    "When we run an HTTPS app that just supports Webfinger": {
-        topic: function() {
-            var app = express(),
-                opts,
-                callback = this.callback;
+        before(function(context, done) {
+            var onResult = function(error, value1) {
+                err = error;
+                app = value1;
+                done(error);
+            };
+
+            app = express();
+            var opts;
+            var callback = onResult;
 
             app.get("/.well-known/webfinger", function(req, res) {
                 var uri = req.query.resource,
@@ -47,7 +56,7 @@ suite.addBatch({
                     },
                     type,
                     types;
- 
+
                 if (username.substr(0, 5) == "acct:") {
                     username = username.substr(5);
                 }
@@ -79,58 +88,67 @@ suite.addBatch({
             app.on("error", function(err) {
                 callback(err, null);
             });
-            
+
             opts = {key: fs.readFileSync(path.join(__dirname, "data", "localhost.key")),
                     cert: fs.readFileSync(path.join(__dirname, "data", "localhost.crt"))};
 
-            https.createServer(opts, app).listen(443, function() {
-                callback(null, app);
+            listen(servers, https.createServer(opts, app), 443, function(err) {
+                callback(err, app);
             });
-        },
-        "it works": function(err, app) {
+        }, {timeout: 10000});
+
+        after(function() {
+            return closeServers(servers);
+        });
+
+        it("it works", function() {
             assert.ifError(err);
-        },
-        teardown: function(app) {
-            if (app && app.close) {
-                app.close();
-            }
-        },
-        "and we get multiple Webfinger rels": {
-            topic: function() {
-                wf.webfinger("alice@localhost", ["profile", "avatar"], this.callback);
-            },
-            "it works": function(err, jrd) {
+        });
+
+        describe("and we get multiple Webfinger rels", function() {
+            var err, jrd;
+
+            before(function(context, done) {
+                var onResult = function(error, value1) {
+                    err = error;
+                    jrd = value1;
+                    done(error);
+                };
+
+                wf.webfinger("alice@localhost", ["profile", "avatar"], onResult);
+            }, {timeout: 10000});
+
+            it("it works", function() {
                 assert.ifError(err);
-                assert.isObject(jrd);
-            },
-            "it has the links": function(err, jrd) {
+                assert.ok(jrd !== null && typeof jrd === "object" && !Array.isArray(jrd));
+            });
+
+            it("it has the links", function() {
                 var profiles, avatars;
                 assert.ifError(err);
-                assert.isObject(jrd);
-                assert.include(jrd, "links");
-                assert.isArray(jrd.links);
-                assert.lengthOf(jrd.links, 2);
+                assert.ok(jrd !== null && typeof jrd === "object" && !Array.isArray(jrd));
+                assert.ok(Object.hasOwn(jrd, "links"));
+                assert.ok(Array.isArray(jrd.links));
+                assert.strictEqual(jrd.links.length, 2);
 
                 profiles = jrd.links.filter(function(item) { return item.rel == "profile"; });
 
-                assert.lengthOf(profiles, 1);
-                assert.isObject(profiles[0]);
-                assert.include(profiles[0], "rel");
+                assert.strictEqual(profiles.length, 1);
+                assert.ok(profiles[0] !== null && typeof profiles[0] === "object" && !Array.isArray(profiles[0]));
+                assert.ok(Object.hasOwn(profiles[0], "rel"));
                 assert.equal(profiles[0].rel, "profile");
-                assert.include(profiles[0], "href");
+                assert.ok(Object.hasOwn(profiles[0], "href"));
                 assert.equal(profiles[0].href, "https://localhost/profile/alice");
 
                 avatars = jrd.links.filter(function(item) { return item.rel == "avatar"; });
 
-                assert.lengthOf(avatars, 1);
-                assert.isObject(avatars[0]);
-                assert.include(avatars[0], "rel");
+                assert.strictEqual(avatars.length, 1);
+                assert.ok(avatars[0] !== null && typeof avatars[0] === "object" && !Array.isArray(avatars[0]));
+                assert.ok(Object.hasOwn(avatars[0], "rel"));
                 assert.equal(avatars[0].rel, "avatar");
-                assert.include(avatars[0], "href");
+                assert.ok(Object.hasOwn(avatars[0], "href"));
                 assert.equal(avatars[0].href, "https://localhost/avatar/alice.png");
-            }
-        }
-    }
+            });
+        });
+    });
 });
-
-suite["export"](module);

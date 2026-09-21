@@ -16,18 +16,28 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-var assert = require("assert"),
-    vows = require("vows"),
+var assert = require("node:assert"),
     express = require("express"),
     wf = require("../lib/webfinger");
 
-var suite = vows.describe("RFC6415 (host-meta) interface");
+var {describe, it, before, after} = require("node:test");
+var {listen, closeServers} = require("./helpers/servers");
+var http = require("node:http");
 
-suite.addBatch({
-    "When we run an HTTP app that supports both host-meta and host-meta.json": {
-        topic: function() {
-            var app = express(),
-                callback = this.callback;
+describe("RFC6415 (host-meta) interface", function() {
+    describe("When we run an HTTP app that supports both host-meta and host-meta.json", function() {
+        var err, app;
+        var servers = [];
+
+        before(function(context, done) {
+            var onResult = function(error, value1) {
+                err = error;
+                app = value1;
+                done(error);
+            };
+
+            app = express();
+            var callback = onResult;
             app.get("/.well-known/host-meta", function(req, res) {
                 res.status(200);
                 res.set("Content-Type", "application/xrd+xml");
@@ -50,42 +60,51 @@ suite.addBatch({
             app.on("error", function(err) {
                 callback(err, null);
             });
-            app.listen(80, function() {
-                callback(null, app);
+            listen(servers, http.createServer(app), 80, function(err) {
+                callback(err, app);
             });
-        },
-        "it works": function(err, app) {
-            assert.ifError(err);
-        },
-        teardown: function(app) {
-            if (app && app.close) {
-                app.close();
-            }
-        },
-        "and we get its host-meta data": {
-            topic: function() {
-                wf.hostmeta("localhost", this.callback);
-            },
-            "it works": function(err, jrd) {
-                assert.ifError(err);
-                assert.isObject(jrd);
-            },
-            "it has the JRD link": function(err, jrd) {
-                assert.ifError(err);
-                assert.isObject(jrd);
-                assert.include(jrd, "links");
-                assert.isArray(jrd.links);
-                assert.lengthOf(jrd.links, 1);
-                assert.isObject(jrd.links[0]);
-                assert.include(jrd.links[0], "rel");
-                assert.equal(jrd.links[0].rel, "lrdd");
-                assert.include(jrd.links[0], "type");
-                assert.equal(jrd.links[0].type, "application/json");
-                assert.include(jrd.links[0], "template");
-                assert.equal(jrd.links[0].template, "http://localhost/lrdd.json?uri={uri}");
-            }
-        }
-    }
-});
+        }, {timeout: 10000});
 
-suite["export"](module);
+        after(function() {
+            return closeServers(servers);
+        });
+
+        it("it works", function() {
+            assert.ifError(err);
+        });
+
+        describe("and we get its host-meta data", function() {
+            var err, jrd;
+
+            before(function(context, done) {
+                var onResult = function(error, value1) {
+                    err = error;
+                    jrd = value1;
+                    done(error);
+                };
+
+                wf.hostmeta("localhost", onResult);
+            }, {timeout: 10000});
+
+            it("it works", function() {
+                assert.ifError(err);
+                assert.ok(jrd !== null && typeof jrd === "object" && !Array.isArray(jrd));
+            });
+
+            it("it has the JRD link", function() {
+                assert.ifError(err);
+                assert.ok(jrd !== null && typeof jrd === "object" && !Array.isArray(jrd));
+                assert.ok(Object.hasOwn(jrd, "links"));
+                assert.ok(Array.isArray(jrd.links));
+                assert.strictEqual(jrd.links.length, 1);
+                assert.ok(jrd.links[0] !== null && typeof jrd.links[0] === "object" && !Array.isArray(jrd.links[0]));
+                assert.ok(Object.hasOwn(jrd.links[0], "rel"));
+                assert.equal(jrd.links[0].rel, "lrdd");
+                assert.ok(Object.hasOwn(jrd.links[0], "type"));
+                assert.equal(jrd.links[0].type, "application/json");
+                assert.ok(Object.hasOwn(jrd.links[0], "template"));
+                assert.equal(jrd.links[0].template, "http://localhost/lrdd.json?uri={uri}");
+            });
+        });
+    });
+});

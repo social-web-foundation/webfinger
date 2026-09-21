@@ -20,21 +20,32 @@ var Step = require("step"),
     fs = require("fs"),
     path = require("path"),
     https = require("https"),
-    assert = require("assert"),
-    vows = require("vows"),
+    assert = require("node:assert"),
     express = require("express"),
     wf = require("../lib/webfinger");
 
+var {describe, it, before, after} = require("node:test");
+var {listen, closeServers} = require("./helpers/servers");
+var http = require("node:http");
+
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
-var suite = vows.describe("webfinger httpsOnly flag disallows redirect to HTTP-only LRDD");
+describe("webfinger httpsOnly flag disallows redirect to HTTP-only LRDD", function() {
+    describe("When we run an HTTPS app that uses an HTTP app for LRDD", function() {
+        var err, hm, lrdd;
+        var servers = [];
 
-suite.addBatch({
-    "When we run an HTTPS app that uses an HTTP app for LRDD": {
-        topic: function() {
-            var hm = express(),
-                lrdd = express(),
-                callback = this.callback;
+        before(function(context, done) {
+            var onResult = function(error, value1, value2) {
+                err = error;
+                hm = value1;
+                lrdd = value2;
+                done(error);
+            };
+
+            hm = express();
+            lrdd = express();
+            var callback = onResult;
 
             // parse queries
             hm.use(express.query());
@@ -83,30 +94,36 @@ suite.addBatch({
                     var opts = {key: fs.readFileSync(path.join(__dirname, "data", "localhost.key")),
                                 cert: fs.readFileSync(path.join(__dirname, "data", "localhost.crt"))};
 
-                    https.createServer(opts, hm).listen(443, this.parallel());
-                    lrdd.listen(80, this.parallel());
+                    listen(servers, https.createServer(opts, hm), 443, this.parallel());
+                    listen(servers, http.createServer(lrdd), 80, this.parallel());
                 },
                 function(err) {
-                    callback(null, hm, lrdd);
+                    callback(err, hm, lrdd);
                 }
             );
-        },
-        "it works": function(err, hm, lrdd) {
+        }, {timeout: 10000});
+
+        after(function() {
+            return closeServers(servers);
+        });
+
+        it("it works", function() {
             assert.ifError(err);
-            assert.isFunction(hm);
-            assert.isFunction(lrdd);
-        },
-        teardown: function(hm, lrdd) {
-            if (hm && hm.close) {
-                hm.close();
-            }
-            if (lrdd && lrdd.close) {
-                lrdd.close();
-            }
-        },
-        "and we get a webfinger with https-only flag set": {
-            topic: function() {
-                var callback = this.callback;
+            assert.strictEqual(typeof hm, "function");
+            assert.strictEqual(typeof lrdd, "function");
+        });
+
+        describe("and we get a webfinger with https-only flag set", function() {
+            var err, jrd;
+
+            before(function(context, done) {
+                var onResult = function(error, value1) {
+                    err = error;
+                    jrd = value1;
+                    done(error);
+                };
+
+                var callback = onResult;
                 wf.webfinger("alice@localhost", null, {httpsOnly: true}, function(err, jrd) {
                     if (err) {
                         callback(null);
@@ -114,12 +131,11 @@ suite.addBatch({
                         callback(new Error("Unexpected success"));
                     }
                 });
-            },
-            "it fails correctly": function(err, jrd) {
-                assert.ifError(err);
-            }
-        }
-    }
-});
+            }, {timeout: 10000});
 
-suite["export"](module);
+            it("it fails correctly", function() {
+                assert.ifError(err);
+            });
+        });
+    });
+});

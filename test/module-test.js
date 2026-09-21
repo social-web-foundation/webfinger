@@ -16,32 +16,36 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-var assert = require("assert"),
-    vows = require("vows");
+var assert = require("node:assert");
 
-var suite = vows.describe("Webfinger module interface");
+var {describe, it, before} = require("node:test");
 
-suite.addBatch({
-    "When we get the app module": {
-        topic: function() { 
-            return require("../lib/webfinger");
-        },
-        "there is one": function(mod) {
-            assert.isObject(mod);
-        },
-        "it has the xrd2jrd() export": function(mod) {
-            assert.isFunction(mod.xrd2jrd);
-        },
-        "it has the webfinger() export": function(mod) {
-            assert.isFunction(mod.webfinger);
-        },
-        "it has the hostmeta() export": function(mod) {
-            assert.isFunction(mod.hostmeta);
-        },
-        "it has the discover() export": function(mod) {
-            assert.isFunction(mod.discover);
-        }
-    }
+describe("Webfinger module interface", function() {
+    describe("When we get the app module", function() {
+        var mod;
+
+        before(function() {
+            mod = require("../lib/webfinger");
+        });
+
+        it("there is one", function() {
+            assert.ok(mod !== null && typeof mod === "object" && !Array.isArray(mod));
+        });
+
+        it("it has the xrd2jrd() export", function() {
+            assert.strictEqual(typeof mod.xrd2jrd, "function");
+        });
+
+        it("it has the webfinger() export", function() {
+            assert.strictEqual(typeof mod.webfinger, "function");
+        });
+
+        it("it has the hostmeta() export", function() {
+            assert.strictEqual(typeof mod.hostmeta, "function");
+        });
+
+        it("it has the discover() export", function() {
+            assert.strictEqual(typeof mod.discover, "function");
+        });
+    });
 });
-
-suite["export"](module);

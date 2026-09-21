@@ -17,25 +17,36 @@
 // limitations under the License.
 
 var Step = require("step"),
-    assert = require("assert"),
-    vows = require("vows"),
+    assert = require("node:assert"),
     express = require("express"),
     https = require("https"),
     wf = require("../lib/webfinger"),
     fs = require("fs"),
     path = require("path");
 
+var {describe, it, before, after} = require("node:test");
+var {listen, closeServers} = require("./helpers/servers");
+var http = require("node:http");
+
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
-var suite = vows.describe("Webfinger should not redirect to HTTP");
+describe("Webfinger should not redirect to HTTP", function() {
+    describe("When we run an HTTPS app that redirects to HTTP for Webfinger", function() {
+        var err, app, sapp;
+        var servers = [];
 
-suite.addBatch({
-    "When we run an HTTPS app that redirects to HTTP for Webfinger": {
-        topic: function() {
-            var app = express(),
-                sapp = express(),
-                opts,
-                callback = this.callback;
+        before(function(context, done) {
+            var onResult = function(error, value1, value2) {
+                err = error;
+                app = value1;
+                sapp = value2;
+                done(error);
+            };
+
+            app = express();
+            sapp = express();
+            var opts;
+            var callback = onResult;
 
             // Secure app redirects to insecure
 
@@ -67,33 +78,38 @@ suite.addBatch({
 
             opts = {key: fs.readFileSync(path.join(__dirname, "data", "localhost.key")),
                     cert: fs.readFileSync(path.join(__dirname, "data", "localhost.crt"))};
-            
+
             Step(
                 function() {
-                    https.createServer(opts, sapp).listen(443, this.parallel());
-                    app.listen(80, this.parallel());
+                    listen(servers, https.createServer(opts, sapp), 443, this.parallel());
+                    listen(servers, http.createServer(app), 80, this.parallel());
                 },
                 function(err) {
-                    callback(null, app, sapp);
+                    callback(err, app, sapp);
                 }
             );
-        },
-        "it works": function(err, app, sapp) {
+        }, {timeout: 10000});
+
+        after(function() {
+            return closeServers(servers);
+        });
+
+        it("it works", function() {
             assert.ifError(err);
-            assert.isFunction(app);
-            assert.isFunction(sapp);
-        },
-        teardown: function(app, sapp) {
-            if (app && app.close) {
-                app.close();
-            }
-            if (sapp && sapp.close) {
-                sapp.close();
-            }
-        },
-        "and we get a Webfinger": {
-            topic: function() {
-                var callback = this.callback;
+            assert.strictEqual(typeof app, "function");
+            assert.strictEqual(typeof sapp, "function");
+        });
+
+        describe("and we get a Webfinger", function() {
+            var err;
+
+            before(function(context, done) {
+                var onResult = function(error) {
+                    err = error;
+                    done(error);
+                };
+
+                var callback = onResult;
                 wf.webfinger("alice@localhost", function(err, jrd) {
                     if (err) {
                         callback(null);
@@ -101,12 +117,11 @@ suite.addBatch({
                         callback(new Error("Unexpected success"));
                     }
                 });
-            },
-            "it fails correctly": function(err) {
-                assert.ifError(err);
-            }
-        }
-    }
-});
+            }, {timeout: 10000});
 
-suite["export"](module);
+            it("it fails correctly", function() {
+                assert.ifError(err);
+            });
+        });
+    });
+});

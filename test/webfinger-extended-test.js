@@ -16,18 +16,28 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-var assert = require("assert"),
-    vows = require("vows"),
+var assert = require("node:assert"),
     express = require("express"),
     wf = require("../lib/webfinger");
 
-var suite = vows.describe("RFC6415 (host-meta) interface");
+var {describe, it, before, after} = require("node:test");
+var {listen, closeServers} = require("./helpers/servers");
+var http = require("node:http");
 
-suite.addBatch({
-    "When we run an HTTP app that just supports host-meta with XRD": {
-        topic: function() {
-            var app = express(),
-                callback = this.callback;
+describe("RFC6415 (host-meta) interface", function() {
+    describe("When we run an HTTP app that just supports host-meta with XRD", function() {
+        var err, app;
+        var servers = [];
+
+        before(function(context, done) {
+            var onResult = function(error, value1) {
+                err = error;
+                app = value1;
+                done(error);
+            };
+
+            app = express();
+            var callback = onResult;
 
             // parse queries
             app.use(express.query());
@@ -66,69 +76,80 @@ suite.addBatch({
             app.on("error", function(err) {
                 callback(err, null);
             });
-            app.listen(80, function() {
-                callback(null, app);
+            listen(servers, http.createServer(app), 80, function(err) {
+                callback(err, app);
             });
-        },
-        "it works": function(err, app) {
-            assert.ifError(err);
-        },
-        teardown: function(app) {
-            if (app && app.close) {
-                app.close();
-            }
-        },
-        "and we get a webfinger's metadata": {
-            topic: function() {
-                wf.webfinger("alice@localhost", this.callback);
-            },
-            "it works": function(err, jrd) {
-                assert.ifError(err);
-                assert.isObject(jrd);
-            },
-            "it has the links": function(err, jrd) {
-                assert.ifError(err);
-                assert.isObject(jrd);
-                assert.include(jrd, "links");
-                assert.isArray(jrd.links);
-                assert.lengthOf(jrd.links, 2);
-                assert.isObject(jrd.links[0]);
-                assert.include(jrd.links[0], "rel");
-                assert.equal(jrd.links[0].rel, "profile");
-                assert.include(jrd.links[0], "href");
-                assert.equal(jrd.links[0].href, "http://localhost/profile/alice");
-                assert.isObject(jrd.links[1]);
-                assert.include(jrd.links[1], "rel");
-                assert.equal(jrd.links[1].rel, "http://apinamespace.org/atom");
-                assert.include(jrd.links[1], "type");
-                assert.equal(jrd.links[1].type, "application/atomsvc+xml");
-                assert.include(jrd.links[1], "href");
-                assert.equal(jrd.links[1].href, "http://localhost/app/alice.atom");
-                assert.include(jrd.links[1], "properties");
-                assert.isObject(jrd.links[1].properties);
-                assert.include(jrd.links[1].properties, "http://apinamespace.org/atom/username");
-                assert.equal(jrd.links[1].properties["http://apinamespace.org/atom/username"], "alice");
-            },
-            "it has the subject": function(err, jrd) {
-                assert.ifError(err);
-                assert.isObject(jrd);
-                assert.include(jrd, "subject");
-                assert.isString(jrd.subject);
-                assert.equal(jrd.subject, "acct:alice@localhost");
-            },
-            "it has the alias": function(err, jrd) {
-                assert.ifError(err);
-                assert.isObject(jrd);
-                assert.include(jrd, "aliases");
-                assert.isArray(jrd.aliases);
-                assert.lengthOf(jrd.aliases, 2);
-                assert.isString(jrd.aliases[0]);
-                assert.equal(jrd.aliases[0], "http://localhost/profile/alice");
-                assert.isString(jrd.aliases[1]);
-                assert.equal(jrd.aliases[1], "http://localhost/user/1");
-            }
-        }
-    }
-});
+        }, {timeout: 10000});
 
-suite["export"](module);
+        after(function() {
+            return closeServers(servers);
+        });
+
+        it("it works", function() {
+            assert.ifError(err);
+        });
+
+        describe("and we get a webfinger's metadata", function() {
+            var err, jrd;
+
+            before(function(context, done) {
+                var onResult = function(error, value1) {
+                    err = error;
+                    jrd = value1;
+                    done(error);
+                };
+
+                wf.webfinger("alice@localhost", onResult);
+            }, {timeout: 10000});
+
+            it("it works", function() {
+                assert.ifError(err);
+                assert.ok(jrd !== null && typeof jrd === "object" && !Array.isArray(jrd));
+            });
+
+            it("it has the links", function() {
+                assert.ifError(err);
+                assert.ok(jrd !== null && typeof jrd === "object" && !Array.isArray(jrd));
+                assert.ok(Object.hasOwn(jrd, "links"));
+                assert.ok(Array.isArray(jrd.links));
+                assert.strictEqual(jrd.links.length, 2);
+                assert.ok(jrd.links[0] !== null && typeof jrd.links[0] === "object" && !Array.isArray(jrd.links[0]));
+                assert.ok(Object.hasOwn(jrd.links[0], "rel"));
+                assert.equal(jrd.links[0].rel, "profile");
+                assert.ok(Object.hasOwn(jrd.links[0], "href"));
+                assert.equal(jrd.links[0].href, "http://localhost/profile/alice");
+                assert.ok(jrd.links[1] !== null && typeof jrd.links[1] === "object" && !Array.isArray(jrd.links[1]));
+                assert.ok(Object.hasOwn(jrd.links[1], "rel"));
+                assert.equal(jrd.links[1].rel, "http://apinamespace.org/atom");
+                assert.ok(Object.hasOwn(jrd.links[1], "type"));
+                assert.equal(jrd.links[1].type, "application/atomsvc+xml");
+                assert.ok(Object.hasOwn(jrd.links[1], "href"));
+                assert.equal(jrd.links[1].href, "http://localhost/app/alice.atom");
+                assert.ok(Object.hasOwn(jrd.links[1], "properties"));
+                assert.ok(jrd.links[1].properties !== null && typeof jrd.links[1].properties === "object" && !Array.isArray(jrd.links[1].properties));
+                assert.ok(Object.hasOwn(jrd.links[1].properties, "http://apinamespace.org/atom/username"));
+                assert.equal(jrd.links[1].properties["http://apinamespace.org/atom/username"], "alice");
+            });
+
+            it("it has the subject", function() {
+                assert.ifError(err);
+                assert.ok(jrd !== null && typeof jrd === "object" && !Array.isArray(jrd));
+                assert.ok(Object.hasOwn(jrd, "subject"));
+                assert.strictEqual(typeof jrd.subject, "string");
+                assert.equal(jrd.subject, "acct:alice@localhost");
+            });
+
+            it("it has the alias", function() {
+                assert.ifError(err);
+                assert.ok(jrd !== null && typeof jrd === "object" && !Array.isArray(jrd));
+                assert.ok(Object.hasOwn(jrd, "aliases"));
+                assert.ok(Array.isArray(jrd.aliases));
+                assert.strictEqual(jrd.aliases.length, 2);
+                assert.strictEqual(typeof jrd.aliases[0], "string");
+                assert.equal(jrd.aliases[0], "http://localhost/profile/alice");
+                assert.strictEqual(typeof jrd.aliases[1], "string");
+                assert.equal(jrd.aliases[1], "http://localhost/user/1");
+            });
+        });
+    });
+});

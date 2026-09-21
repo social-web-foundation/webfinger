@@ -16,7 +16,7 @@
     "author": "Evan Prodromou <evanp@socialweb.foundation>",
 
     "scripts": {
-        "test": "vows -i test/*-test.js"
+        "test": "node --test --test-concurrency=1 test/*-test.js"
     },
 
     "main": "./lib/webfinger.js",
@@ -26,7 +26,6 @@
     },
 
     "devDependencies": {
-        "vows": "0.7.x",
         "express": "3.0.x"
     },
 

@@ -16,20 +16,30 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-var assert = require("assert"),
-    vows = require("vows"),
+var assert = require("node:assert"),
     express = require("express"),
     wf = require("../lib/webfinger");
 
+var {describe, it, before, after} = require("node:test");
+var {listen, closeServers} = require("./helpers/servers");
+var http = require("node:http");
+
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
-var suite = vows.describe("webfinger httpsOnly flag causes error");
+describe("webfinger httpsOnly flag causes error", function() {
+    describe("When we run an HTTP app that just supports host-meta with XRD", function() {
+        var err, app;
+        var servers = [];
 
-suite.addBatch({
-    "When we run an HTTP app that just supports host-meta with XRD": {
-        topic: function() {
-            var app = express(),
-                callback = this.callback;
+        before(function(context, done) {
+            var onResult = function(error, value1) {
+                err = error;
+                app = value1;
+                done(error);
+            };
+
+            app = express();
+            var callback = onResult;
 
             // parse queries
             app.use(express.query());
@@ -67,21 +77,30 @@ suite.addBatch({
             app.on("error", function(err) {
                 callback(err, null);
             });
-            app.listen(80, function() {
-                callback(null, app);
+            listen(servers, http.createServer(app), 80, function(err) {
+                callback(err, app);
             });
-        },
-        "it works": function(err, app) {
+        }, {timeout: 10000});
+
+        after(function() {
+            return closeServers(servers);
+        });
+
+        it("it works", function() {
             assert.ifError(err);
-        },
-        teardown: function(app) {
-            if (app && app.close) {
-                app.close();
-            }
-        },
-        "and we get a webfinger with https-only flag set": {
-            topic: function() {
-                var callback = this.callback;
+        });
+
+        describe("and we get a webfinger with https-only flag set", function() {
+            var err, jrd;
+
+            before(function(context, done) {
+                var onResult = function(error, value1) {
+                    err = error;
+                    jrd = value1;
+                    done(error);
+                };
+
+                var callback = onResult;
                 wf.webfinger("alice@localhost", null, {httpsOnly: true}, function(err, jrd) {
                     if (err) {
                         callback(null);
@@ -89,12 +108,11 @@ suite.addBatch({
                         callback(new Error("Unexpected success"));
                     }
                 });
-            },
-            "it fails correctly": function(err, jrd) {
-                assert.ifError(err);
-            }
-        }
-    }
-});
+            }, {timeout: 10000});
 
-suite["export"](module);
+            it("it fails correctly", function() {
+                assert.ifError(err);
+            });
+        });
+    });
+});
