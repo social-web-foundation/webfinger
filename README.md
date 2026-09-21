@@ -14,6 +14,7 @@ It supports:
 ## License
 
 Copyright 2012,2013 E14N https://e14n.com/
+Copyright 2026, Social Web Foundation https://socialwebfoundation.org/
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -105,7 +106,7 @@ behaviour. Currently, the options are:
 
 Gets link data for `address` and returns it to function `callback`.
 
-If you've got an address and you don't want to bother figuring out if it's a 
+If you've got an address and you don't want to bother figuring out if it's a
 webfinger or a hostname, call this and we'll do it for you.
 
 `callback` works just like with `webfinger()`.
@@ -128,4 +129,4 @@ your main computer.
 
 Bugs welcome, see:
 
- https://github.com/e14n/webfinger/issues
+ https://github.com/social-web-foundation/webfinger/issues
