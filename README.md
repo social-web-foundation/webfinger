@@ -122,7 +122,7 @@ No servers, certificates, network access, or elevated privileges are needed.
 
     npm test
 
-# Bugs
+## Bugs
 
 Bugs welcome, see:
 
