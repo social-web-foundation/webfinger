@@ -46,28 +46,9 @@ describe("Test missing hostmeta endpoint", function() {
         });
 
         describe("and we get its host-meta data", function() {
-            var err, jrd;
-
-            before(function(context, done) {
-                var onResult = function(error, value1) {
-                    err = error;
-                    jrd = value1;
-                    done(error);
-                };
-
-                var callback = onResult;
-                wf.hostmeta("localhost", function(err, jrd) {
-                    if (err) {
-                        callback(null);
-                    } else {
-                        callback(new Error("Unexpected success!"));
-                    }
-                });
+            it("it works", async function() {
+                await assert.rejects(wf.hostmeta("localhost"));
             }, {timeout: 10000});
-
-            it("it works", function() {
-                assert.ifError(err);
-            });
         });
     });
 });

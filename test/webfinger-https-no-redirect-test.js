@@ -72,27 +72,9 @@ describe("Webfinger should not redirect to HTTP", function() {
         });
 
         describe("and we get a Webfinger", function() {
-            var err;
-
-            before(function(context, done) {
-                var onResult = function(error) {
-                    err = error;
-                    done(error);
-                };
-
-                var callback = onResult;
-                wf.webfinger("alice@localhost", function(err, jrd) {
-                    if (err) {
-                        callback(null);
-                    } else {
-                        callback(new Error("Unexpected success"));
-                    }
-                });
+            it("it fails correctly", async function() {
+                await assert.rejects(wf.webfinger("alice@localhost"));
             }, {timeout: 10000});
-
-            it("it fails correctly", function() {
-                assert.ifError(err);
-            });
         });
     });
 });

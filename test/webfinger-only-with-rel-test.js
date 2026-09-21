@@ -49,25 +49,17 @@ describe("RFC6415 (host-meta) interface", function() {
         });
 
         describe("and we get a single Webfinger rel", function() {
-            var err, jrd;
+            var jrd;
 
-            before(function(context, done) {
-                var onResult = function(error, value1) {
-                    err = error;
-                    jrd = value1;
-                    done(error);
-                };
-
-                wf.webfinger("alice@localhost", "profile", onResult);
+            before(async function() {
+                jrd = await wf.webfinger("alice@localhost", "profile");
             }, {timeout: 10000});
 
             it("it works", function() {
-                assert.ifError(err);
                 assert.ok(jrd !== null && typeof jrd === "object" && !Array.isArray(jrd));
             });
 
             it("it has the links", function() {
-                assert.ifError(err);
                 assert.ok(jrd !== null && typeof jrd === "object" && !Array.isArray(jrd));
                 assert.ok(Object.hasOwn(jrd, "links"));
                 assert.ok(Array.isArray(jrd.links));
@@ -81,25 +73,17 @@ describe("RFC6415 (host-meta) interface", function() {
         });
 
         describe("and we get the other Webfinger rel", function() {
-            var err, jrd;
+            var jrd;
 
-            before(function(context, done) {
-                var onResult = function(error, value1) {
-                    err = error;
-                    jrd = value1;
-                    done(error);
-                };
-
-                wf.webfinger("alice@localhost", "avatar", onResult);
+            before(async function() {
+                jrd = await wf.webfinger("alice@localhost", "avatar");
             }, {timeout: 10000});
 
             it("it works", function() {
-                assert.ifError(err);
                 assert.ok(jrd !== null && typeof jrd === "object" && !Array.isArray(jrd));
             });
 
             it("it has the links", function() {
-                assert.ifError(err);
                 assert.ok(jrd !== null && typeof jrd === "object" && !Array.isArray(jrd));
                 assert.ok(Object.hasOwn(jrd, "links"));
                 assert.ok(Array.isArray(jrd.links));
@@ -113,25 +97,17 @@ describe("RFC6415 (host-meta) interface", function() {
         });
 
         describe("and we get an unrecognized Webfinger rel", function() {
-            var err, jrd;
+            var jrd;
 
-            before(function(context, done) {
-                var onResult = function(error, value1) {
-                    err = error;
-                    jrd = value1;
-                    done(error);
-                };
-
-                wf.webfinger("alice@localhost", "http://web.example/unrecognized", onResult);
+            before(async function() {
+                jrd = await wf.webfinger("alice@localhost", "http://web.example/unrecognized");
             }, {timeout: 10000});
 
             it("it works", function() {
-                assert.ifError(err);
                 assert.ok(jrd !== null && typeof jrd === "object" && !Array.isArray(jrd));
             });
 
             it("it has no links", function() {
-                assert.ifError(err);
                 assert.ok(jrd !== null && typeof jrd === "object" && !Array.isArray(jrd));
                 assert.ok(Object.hasOwn(jrd, "links"));
                 assert.ok(Array.isArray(jrd.links));

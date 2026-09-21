@@ -47,28 +47,9 @@ describe("hostmeta shouldn't redirect to http if https-only flag set", function(
         });
 
         describe("and we get hostmeta data with httpsOnly flag set", function() {
-            var err, jrd;
-
-            before(function(context, done) {
-                var onResult = function(error, value1) {
-                    err = error;
-                    jrd = value1;
-                    done(error);
-                };
-
-                var callback = onResult;
-                wf.hostmeta("localhost", {httpsOnly: true}, function(err, jrd) {
-                    if (err) {
-                        callback(null);
-                    } else {
-                        callback(new Error("Unexpected success"));
-                    }
-                });
+            it("it fails correctly", async function() {
+                await assert.rejects(wf.hostmeta("localhost", {httpsOnly: true}));
             }, {timeout: 10000});
-
-            it("it fails correctly", function() {
-                assert.ifError(err);
-            });
         });
     });
 });

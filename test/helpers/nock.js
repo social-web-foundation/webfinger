@@ -1,5 +1,5 @@
 const assert = require('node:assert/strict')
-const dns = require('node:dns')
+const dns = require('node:dns').promises
 const { before, after, mock } = require('node:test')
 const nock = require('nock')
 
@@ -20,16 +20,9 @@ function useNock () {
   before(function () {
     nock.disableNetConnect()
     nock.emitter.on('no match', recordUnexpected)
-    lookup = mock.method(dns, 'lookup', function (hostname, options, callback) {
-      if (typeof options === 'function') {
-        callback = options
-        options = {}
-      }
+    lookup = mock.method(dns, 'lookup', async function (hostname) {
       assert.equal(hostname, 'localhost')
-      process.nextTick(function () {
-        if (options && options.all) callback(null, [{ address: '127.0.0.1', family: 4 }])
-        else callback(null, '127.0.0.1', 4)
-      })
+      return { address: '127.0.0.1', family: 4 }
     })
   })
 

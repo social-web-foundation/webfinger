@@ -19,7 +19,7 @@
 var assert = require("node:assert"),
     wf = require("../lib/webfinger");
 
-var {describe, it, before} = require("node:test");
+var {describe, it} = require("node:test");
 var {useNock} = require("./helpers/nock");
 
 describe("Test hostmeta for bad domain", function() {
@@ -33,17 +33,10 @@ describe("Test hostmeta for bad domain", function() {
         ["When we get host-meta data for example.net", "example.net"]
     ].forEach(function([name, domain]) {
         describe(name, function() {
-            var err;
-
-            before(function(context, done) {
-                wf.hostmeta(domain, function(error) {
-                    err = error ? null : new Error("Unexpected success!");
-                    done(err);
+            it("it works", async function() {
+                await assert.rejects(wf.hostmeta(domain), {
+                    message: "Invalid hostname: " + domain
                 });
-            }, {timeout: 10000});
-
-            it("it works", function() {
-                assert.ifError(err);
             });
         });
     });

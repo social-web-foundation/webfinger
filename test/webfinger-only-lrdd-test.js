@@ -52,28 +52,9 @@ describe("RFC6415 (host-meta) interface", function() {
         });
 
         describe("and we do LRDD discovery", function() {
-            var err;
-
-            before(function(context, done) {
-                var onResult = function(error) {
-                    err = error;
-                    done(error);
-                };
-
-                var callback = onResult;
-
-                wf.lrdd("alice@localhost", function(err, jrd) {
-                    if (err) {
-                        callback(null);
-                    } else {
-                        callback(new Error("Unexpected success"));
-                    }
-                });
+            it("it fails correctly", async function() {
+                await assert.rejects(wf.lrdd("alice@localhost"));
             }, {timeout: 10000});
-
-            it("it fails correctly", function() {
-                assert.ifError(err);
-            });
         });
     });
 });

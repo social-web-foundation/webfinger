@@ -30,15 +30,15 @@ limitations under the License.
 
 ## API
 
-### webfinger(address, callback)
+All methods return promises. Await the result; errors reject the promise.
+This replaces the previous callback API.
 
-Gets link data for the address `address` and returns it to function `callback`.
+### webfinger(address)
+
+Resolves to link data for the address `address` in JRD format.
 
 The `address` argument can be any kind of URL that node.js recognizes;
 acct: and http: and https: URLs are the most likely to work.
-
-`callback` should take two arguments: `err` for an error, and `jrd`
-for a JRD representation of the Webfinger data.
 
 Note that the data is returned in JRD format even if it's in XRD
 format on the server.
@@ -46,7 +46,7 @@ format on the server.
 This method will first try the `/.well-known/webfinger` endpoint; if
 that doesn't work it will fall back to RFC 6415 discovery.
 
-### webfinger(address, rel, callback)
+### webfinger(address, rel)
 
 As above, but passes the `rel` parameter to the
 `/.well-known/webfinger` endpoint if it's truthy.
@@ -58,7 +58,9 @@ fallback to RFC 6415 everything is returned.
 Even if you pass a `rel` argument, you should still filter the
 results. (But future versions of this library may do it for you.)
 
-### webfinger(address, rel, options, callback)
+### webfinger(address, rel, options)
+
+Pass `null` for `rel` when specifying options without a relation filter.
 
 As above, but you can use the `options` object to control
 behaviour. Currently, the options are:
@@ -71,13 +73,13 @@ behaviour. Currently, the options are:
   the .well-known/webfinger endpoint. When this is set, it won't
   use host-meta and LRDD endpoints as a fallback.
 
-### lrdd(address, callback)
+### lrdd(address)
 
 Explicitly use Host Metadata + LRDD lookup per RFC 6415 and avoid the
 /.well-known/webfinger endpoint. Use this if you know a host only
 supports LRDD.
 
-### lrdd(address, options, callback)
+### lrdd(address, options)
 
 As above, but with fine control of options. Options include:
 
@@ -86,13 +88,11 @@ As above, but with fine control of options. Options include:
   use Webfinger, host-meta or LRDD endpoints that aren't HTTPS, and won't
   follow redirect requests to HTTP endpoints.
 
-### hostmeta(address, callback)
+### hostmeta(address)
 
-Gets link data for the host at `address` and returns it to function `callback`.
+Resolves to link data for the host at `address` in JRD format.
 
-`callback` works just like with `webfinger()`.
-
-### hostmeta(address, options, callback)
+### hostmeta(address, options)
 
 As above, but you can use the `options` object to control
 behaviour. Currently, the options are:
@@ -102,19 +102,21 @@ behaviour. Currently, the options are:
   use host-meta or host-meta.json endpoints that aren't HTTPS, and won't
   follow redirect requests to HTTP endpoints.
 
-### discover(address, callback)
+### discover(address)
 
-Gets link data for `address` and returns it to function `callback`.
+Resolves to link data for `address` in JRD format.
 
 If you've got an address and you don't want to bother figuring out if it's a
 webfinger or a hostname, call this and we'll do it for you.
 
-`callback` works just like with `webfinger()`.
+### xrd2jrd(xml)
+
+Resolves to the JRD representation of an XRD document. Invalid XML rejects
+the promise.
 
 ## Testing
 
-Use Node.js 22 to run the tests with the built-in Node Test Runner. The
-package's runtime engine range is broader than the test tooling supports.
+Use Node.js 22, 24, or 26 to run the tests with the built-in Node Test Runner.
 Nock intercepts HTTP and HTTPS requests, and the tests mock DNS resolution.
 No servers, certificates, network access, or elevated privileges are needed.
 

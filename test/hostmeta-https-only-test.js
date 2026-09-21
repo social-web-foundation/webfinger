@@ -43,27 +43,9 @@ describe("Flag to prevent falling back to http", function() {
         });
 
         describe("and we get its host-meta data with the HTTPS-only flag", function() {
-            var err;
-
-            before(function(context, done) {
-                var onResult = function(error) {
-                    err = error;
-                    done(error);
-                };
-
-                var callback = onResult;
-                wf.hostmeta("localhost", {httpsOnly: true}, function(err, jrd) {
-                    if (err) {
-                        callback(null);
-                    } else {
-                        callback(new Error("Unexpected success!"));
-                    }
-                });
+            it("it fails correctly", async function() {
+                await assert.rejects(wf.hostmeta("localhost", {httpsOnly: true}));
             }, {timeout: 10000});
-
-            it("it fails correctly", function() {
-                assert.ifError(err);
-            });
         });
     });
 });

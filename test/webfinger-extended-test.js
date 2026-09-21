@@ -61,25 +61,17 @@ describe("RFC6415 (host-meta) interface", function() {
         });
 
         describe("and we get a webfinger's metadata", function() {
-            var err, jrd;
+            var jrd;
 
-            before(function(context, done) {
-                var onResult = function(error, value1) {
-                    err = error;
-                    jrd = value1;
-                    done(error);
-                };
-
-                wf.webfinger("alice@localhost", onResult);
+            before(async function() {
+                jrd = await wf.webfinger("alice@localhost");
             }, {timeout: 10000});
 
             it("it works", function() {
-                assert.ifError(err);
                 assert.ok(jrd !== null && typeof jrd === "object" && !Array.isArray(jrd));
             });
 
             it("it has the links", function() {
-                assert.ifError(err);
                 assert.ok(jrd !== null && typeof jrd === "object" && !Array.isArray(jrd));
                 assert.ok(Object.hasOwn(jrd, "links"));
                 assert.ok(Array.isArray(jrd.links));
@@ -103,7 +95,6 @@ describe("RFC6415 (host-meta) interface", function() {
             });
 
             it("it has the subject", function() {
-                assert.ifError(err);
                 assert.ok(jrd !== null && typeof jrd === "object" && !Array.isArray(jrd));
                 assert.ok(Object.hasOwn(jrd, "subject"));
                 assert.strictEqual(typeof jrd.subject, "string");
@@ -111,7 +102,6 @@ describe("RFC6415 (host-meta) interface", function() {
             });
 
             it("it has the alias", function() {
-                assert.ifError(err);
                 assert.ok(jrd !== null && typeof jrd === "object" && !Array.isArray(jrd));
                 assert.ok(Object.hasOwn(jrd, "aliases"));
                 assert.ok(Array.isArray(jrd.aliases));

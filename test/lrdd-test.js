@@ -51,25 +51,17 @@ describe("RFC6415 (host-meta) interface", function() {
         });
 
         describe("and we get metadata with lrdd", function() {
-            var err, jrd;
+            var jrd;
 
-            before(function(context, done) {
-                var onResult = function(error, value1) {
-                    err = error;
-                    jrd = value1;
-                    done(error);
-                };
-
-                wf.lrdd("alice@localhost", onResult);
+            before(async function() {
+                jrd = await wf.lrdd("alice@localhost");
             }, {timeout: 10000});
 
             it("it works", function() {
-                assert.ifError(err);
                 assert.ok(jrd !== null && typeof jrd === "object" && !Array.isArray(jrd));
             });
 
             it("it has the link", function() {
-                assert.ifError(err);
                 assert.ok(jrd !== null && typeof jrd === "object" && !Array.isArray(jrd));
                 assert.ok(Object.hasOwn(jrd, "links"));
                 assert.ok(Array.isArray(jrd.links));

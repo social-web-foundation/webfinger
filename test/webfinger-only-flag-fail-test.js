@@ -55,27 +55,9 @@ describe("RFC6415 (host-meta) interface", function() {
         });
 
         describe("and we get a webfinger with the webfingerOnly flag set", function() {
-            var err;
-
-            before(function(context, done) {
-                var onResult = function(error) {
-                    err = error;
-                    done(error);
-                };
-
-                var callback = onResult;
-                wf.webfinger("alice@localhost", null, {webfingerOnly: true}, function(err, jrd) {
-                    if (err) {
-                        callback(null);
-                    } else {
-                        callback(new Error("Unexpected success"));
-                    }
-                });
+            it("it fails correctly", async function() {
+                await assert.rejects(wf.webfinger("alice@localhost", null, {webfingerOnly: true}));
             }, {timeout: 10000});
-
-            it("it fails correctly", function() {
-                assert.ifError(err);
-            });
         });
     });
 });
