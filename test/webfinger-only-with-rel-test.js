@@ -17,79 +17,35 @@
 // limitations under the License.
 
 var assert = require("node:assert"),
-    express = require("express"),
-    https = require("https"),
-    wf = require("../lib/webfinger"),
-    fs = require("fs"),
-    path = require("path");
+    nock = require("nock"),
+    wf = require("../lib/webfinger");
 
-var {describe, it, before, after} = require("node:test");
-var {listen, closeServers} = require("./helpers/servers");
-
-process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+var {describe, it, before} = require("node:test");
+var {useNock} = require("./helpers/nock");
 
 describe("RFC6415 (host-meta) interface", function() {
-    describe("When we run an HTTPS app that just supports Webfinger", function() {
-        var err, app;
-        var servers = [];
+    useNock();
 
-        before(function(context, done) {
-            var onResult = function(error, value1) {
-                err = error;
-                app = value1;
-                done(error);
-            };
+    describe("When an HTTPS service just supports Webfinger", function() {
+        before(function() {
+            nock("https://localhost")
+                .get("/.well-known/webfinger")
+                .query({"resource": "acct:alice@localhost", "rel": "profile"})
+                .reply(200, {"subject": "acct:alice@localhost", "links": [{"rel": "profile", "href": "https://localhost/profile/alice"}]});
 
-            app = express();
-            var opts;
-            var callback = onResult;
+            nock("https://localhost")
+                .get("/.well-known/webfinger")
+                .query({"resource": "acct:alice@localhost", "rel": "avatar"})
+                .reply(200, {"subject": "acct:alice@localhost", "links": [{"rel": "avatar", "href": "https://localhost/avatar/alice.png"}]});
 
-            app.get("/.well-known/webfinger", function(req, res) {
-                var uri = req.query.resource,
-                    rel = req.query.rel,
-                    parts = uri.split("@"),
-                    username = parts[0],
-                    hostname = parts[1],
-                    result = {
-                        subject: uri,
-                        links: []
-                    };
-
-                if (username.substr(0, 5) == "acct:") {
-                    username = username.substr(5);
-                }
-
-                if (!rel || rel == "profile") {
-                    result.links.push({rel: "profile",
-                                       href: "https://localhost/profile/" + username});
-                }
-
-                if (!rel || rel == "avatar") {
-                    result.links.push({rel: "avatar",
-                                       href: "https://localhost/avatar/" + username + ".png"});
-                }
-
-                res.json(result);
-            });
-
-            app.on("error", function(err) {
-                callback(err, null);
-            });
-
-            opts = {key: fs.readFileSync(path.join(__dirname, "data", "localhost.key")),
-                    cert: fs.readFileSync(path.join(__dirname, "data", "localhost.crt"))};
-
-            listen(servers, https.createServer(opts, app), 443, function(err) {
-                callback(err, app);
-            });
-        }, {timeout: 10000});
-
-        after(function() {
-            return closeServers(servers);
+            nock("https://localhost")
+                .get("/.well-known/webfinger")
+                .query({"resource": "acct:alice@localhost", "rel": "http://web.example/unrecognized"})
+                .reply(200, {"subject": "acct:alice@localhost", "links": []});
         });
 
-        it("it works", function() {
-            assert.ifError(err);
+        it("it installs the HTTP fixtures", function() {
+            assert.ok(nock.activeMocks().length > 0);
         });
 
         describe("and we get a single Webfinger rel", function() {

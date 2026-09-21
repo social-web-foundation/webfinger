@@ -16,82 +16,41 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-var Step = require("step"),
-    assert = require("node:assert"),
-    express = require("express"),
-    http = require("http"),
-    https = require("https"),
-    wf = require("../lib/webfinger"),
-    fs = require("fs"),
-    path = require("path");
+var assert = require("node:assert"),
+    nock = require("nock"),
+    wf = require("../lib/webfinger");
 
-var {describe, it, before, after} = require("node:test");
-var {listen, closeServers} = require("./helpers/servers");
+var {describe, it, before} = require("node:test");
+var {useNock} = require("./helpers/nock");
 
 describe("RFC6415 (host-meta) interface", function() {
-    describe("When we run an HTTPS app that just redirects to the HTTP home page", function() {
-        var err, app;
-        var servers = [];
+    useNock();
 
-        before(function(context, done) {
-            var onResult = function(error, value1) {
-                err = error;
-                app = value1;
-                done(error);
-            };
+    describe("When an HTTPS service just redirects to the HTTP home page", function() {
+        before(function() {
+            nock("https://127.0.0.1")
+                .get("/.well-known/host-meta.json")
+                .reply(404, "Not found");
 
-            app = express();
-            var sapp = express();
-            var opts;
-            var cnt = 0;
-            var callback = onResult;
+            nock("https://localhost")
+                .get("/.well-known/host-meta")
+                .reply(302, "Redirect", {"Location": "http://localhost/"});
 
-            app.get("/", function(req, res) {
-                res.status(200).set("Content-Type", "text/html");
-                res.end("<html><head><title>Localhost</title></head><body><h1>Localhost</h1></body></html>");
-            });
+            nock("http://localhost")
+                .get("/")
+                .reply(200, "<html><head><title>Localhost</title></head><body><h1>Localhost</h1></body></html>", {"Content-Type": "text/html"});
 
-            app.get("/.well-known/host-meta", function(req, res) {
-                res.status(200);
-                res.set("Content-Type", "application/xrd+xml");
-                res.end("<?xml version='1.0' encoding='UTF-8'?>\n"+
-                        "<XRD xmlns='http://docs.oasis-open.org/ns/xri/xrd-1.0'>\n" +
-                        "<Link rel='lrdd' type='application/xrd+xml' template='http://localhost/lrdd?uri={uri}' />"+
-                        "</XRD>");
-            });
+            nock("http://localhost")
+                .get("/.well-known/host-meta.json")
+                .reply(404, "Not found");
 
-            app.on("error", function(err) {
-                callback(err, null);
-            });
-
-            sapp.get("/.well-known/host-meta", function(req, res) {
-                res.status(302).set("Location", "http://localhost/").send("Redirect");
-            });
-
-            sapp.on("error", function(err) {
-                callback(err, null);
-            });
-
-            opts = {key: fs.readFileSync(path.join(__dirname, "data", "localhost.key")),
-                    cert: fs.readFileSync(path.join(__dirname, "data", "localhost.crt"))};
-
-            Step(
-                function() {
-                    listen(servers, https.createServer(opts, sapp), 443, this.parallel());
-                    listen(servers, http.createServer(app), 80, this.parallel());
-                },
-                function(err) {
-                    callback(err, app, sapp);
-                }
-            );
-        }, {timeout: 10000});
-
-        after(function() {
-            return closeServers(servers);
+            nock("http://localhost")
+                .get("/.well-known/host-meta")
+                .reply(200, "<?xml version='1.0' encoding='UTF-8'?>\n<XRD xmlns='http://docs.oasis-open.org/ns/xri/xrd-1.0'>\n<Link rel='lrdd' type='application/xrd+xml' template='http://localhost/lrdd?uri={uri}' /></XRD>", {"Content-Type": "application/xrd+xml"});
         });
 
-        it("it works", function() {
-            assert.ifError(err);
+        it("it installs the HTTP fixtures", function() {
+            assert.ok(nock.activeMocks().length > 0);
         });
 
         describe("and we get its host-meta data", function() {

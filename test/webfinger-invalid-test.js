@@ -20,8 +20,11 @@ var assert = require("node:assert"),
     wf = require("../lib/webfinger");
 
 var {describe, it, before} = require("node:test");
+var {useNock} = require("./helpers/nock");
 
 describe("Test webfinger for bad domain", function() {
+    useNock();
+
     [
         ["When we get webfinger data for a user in a .invalid domain", "webfinger.invalid"],
         ["When we get webfinger data for a user in a .example domain", "webfinger.example"],

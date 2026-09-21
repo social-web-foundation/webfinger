@@ -17,76 +17,47 @@
 // limitations under the License.
 
 var assert = require("node:assert"),
-    express = require("express"),
+    nock = require("nock"),
     wf = require("../lib/webfinger");
 
-var {describe, it, before, after} = require("node:test");
-var {listen, closeServers} = require("./helpers/servers");
-var http = require("node:http");
+var {describe, it, before} = require("node:test");
+var {useNock} = require("./helpers/nock");
 
 describe("RFC6415 (host-meta) interface", function() {
-    describe("When we run an HTTP app that just supports host-meta with XRD", function() {
-        var err, app;
-        var servers = [];
+    useNock();
 
-        before(function(context, done) {
-            var onResult = function(error, value1) {
-                err = error;
-                app = value1;
-                done(error);
-            };
+    describe("When an HTTP service just supports host-meta with XRD", function() {
+        before(function() {
+            nock("https://localhost")
+                .get("/.well-known/webfinger")
+                .query({"resource": "acct:alice@localhost"})
+                .replyWithError(Object.assign(new Error("Connection refused"), {code: "ECONNREFUSED"}));
 
-            app = express();
-            var callback = onResult;
+            nock("https://localhost")
+                .get("/.well-known/webfinger")
+                .query({"resource": "alice@localhost"})
+                .replyWithError(Object.assign(new Error("Connection refused"), {code: "ECONNREFUSED"}));
 
-            // parse queries
-            app.use(express.query());
+            nock("https://127.0.0.1")
+                .get("/.well-known/host-meta.json")
+                .replyWithError(Object.assign(new Error("Connection refused"), {code: "ECONNREFUSED"}));
 
-            app.get("/.well-known/host-meta", function(req, res) {
-                res.status(200);
-                res.set("Content-Type", "application/xrd+xml");
-                res.end("<?xml version='1.0' encoding='UTF-8'?>\n"+
-                        "<XRD xmlns='http://docs.oasis-open.org/ns/xri/xrd-1.0'>\n" +
-                        "<Link rel='lrdd' type='application/xrd+xml' template='http://localhost/lrdd?uri={uri}' />"+
-                        "</XRD>");
-            });
-            app.get("/lrdd", function(req, res) {
-                var uri = req.query.uri,
-                    parts = uri.split("@"),
-                    username = parts[0],
-                    hostname = parts[1];
+            nock("http://localhost")
+                .get("/.well-known/host-meta.json")
+                .reply(404, "Not found");
 
-                if (username.substr(0, 5) == "acct:") {
-                    username = username.substr(5);
-                }
+            nock("http://localhost")
+                .get("/.well-known/host-meta")
+                .reply(200, "<?xml version='1.0' encoding='UTF-8'?>\n<XRD xmlns='http://docs.oasis-open.org/ns/xri/xrd-1.0'>\n<Link rel='lrdd' type='application/xrd+xml' template='http://localhost/lrdd?uri={uri}' /></XRD>", {"Content-Type": "application/xrd+xml"});
 
-                res.status(200);
-                res.set("Content-Type", "application/xrd+xml");
-                res.end("<?xml version='1.0' encoding='UTF-8'?>\n"+
-                        "<XRD xmlns='http://docs.oasis-open.org/ns/xri/xrd-1.0'>\n" +
-                        "<Subject>"+uri+"</Subject>\n"+
-                        "<Alias>http://localhost/profile/"+username+"</Alias>\n"+
-                        "<Alias>http://localhost/user/1</Alias>\n"+
-                        "<Link rel='profile' href='http://localhost/profile/"+username+"' />\n"+
-                        "<Link rel='http://apinamespace.org/atom' type='application/atomsvc+xml'"+
-                        " href='http://localhost/app/"+username+".atom'>"+
-                         "<Property type='http://apinamespace.org/atom/username'>"+username+"</Property></Link>"+
-                        "</XRD>");
-            });
-            app.on("error", function(err) {
-                callback(err, null);
-            });
-            listen(servers, http.createServer(app), 80, function(err) {
-                callback(err, app);
-            });
-        }, {timeout: 10000});
-
-        after(function() {
-            return closeServers(servers);
+            nock("http://localhost")
+                .get("/lrdd")
+                .query({"uri": "acct:alice@localhost"})
+                .reply(200, "<?xml version='1.0' encoding='UTF-8'?>\n<XRD xmlns='http://docs.oasis-open.org/ns/xri/xrd-1.0'>\n<Subject>acct:alice@localhost</Subject>\n<Alias>http://localhost/profile/alice</Alias>\n<Alias>http://localhost/user/1</Alias>\n<Link rel='profile' href='http://localhost/profile/alice' />\n<Link rel='http://apinamespace.org/atom' type='application/atomsvc+xml' href='http://localhost/app/alice.atom'><Property type='http://apinamespace.org/atom/username'>alice</Property></Link></XRD>", {"Content-Type": "application/xrd+xml"});
         });
 
-        it("it works", function() {
-            assert.ifError(err);
+        it("it installs the HTTP fixtures", function() {
+            assert.ok(nock.activeMocks().length > 0);
         });
 
         describe("and we get a webfinger's metadata", function() {

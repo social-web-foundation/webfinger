@@ -16,111 +16,56 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-var Step = require("step"),
-    fs = require("fs"),
-    path = require("path"),
-    https = require("https"),
-    assert = require("node:assert"),
-    express = require("express"),
+var assert = require("node:assert"),
+    nock = require("nock"),
     wf = require("../lib/webfinger");
 
-var {describe, it, before, after} = require("node:test");
-var {listen, closeServers} = require("./helpers/servers");
-var http = require("node:http");
-
-process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+var {describe, it, before} = require("node:test");
+var {useNock, forbid} = require("./helpers/nock");
 
 describe("hostmeta shouldn't redirect to http if https-only flag set", function() {
-    describe("When we run an HTTPS app that redirects to an HTTP app for hostmeta", function() {
-        var err, hm, hm2;
-        var servers = [];
+    useNock();
 
-        before(function(context, done) {
-            var onResult = function(error, value1, value2) {
-                err = error;
-                hm = value1;
-                hm2 = value2;
-                done(error);
-            };
+    describe("When an HTTPS service redirects to an HTTP service for hostmeta", function() {
+        before(function() {
+            nock("https://localhost")
+                .get("/.well-known/webfinger")
+                .query({"resource": "acct:alice@localhost"})
+                .reply(404, "Not found");
 
-            hm = express();
-            hm2 = express();
-            var callback = onResult;
+            nock("https://localhost")
+                .get("/.well-known/webfinger")
+                .query({"resource": "alice@localhost"})
+                .reply(404, "Not found");
 
-            // parse queries
-            hm.use(express.query());
+            nock("https://127.0.0.1")
+                .get("/.well-known/host-meta.json")
+                .reply(307, "Redirect", {"Location": "http://localhost/.well-known/host-meta.json"});
 
-            // secure app redirects to insecure
+            nock("https://localhost")
+                .get("/.well-known/host-meta")
+                .reply(404, "Not found");
 
-            hm.get("/.well-known/host-meta.json", function(req, res) {
-                res.redirect(307, "http://localhost/.well-known/host-meta.json");
-            });
+            forbid(nock("http://localhost"))
+                .get("/.well-known/host-meta.json")
+                .optionally()
+                .reply(200, {"links": [{"rel": "lrdd", "type": "application/json", "template": "http://localhost/lrdd.json?uri={uri}"}]});
 
-            // parse queries
-            hm2.use(express.query());
+            forbid(nock("http://localhost"))
+                .get("/lrdd.json")
+                .query({"uri": "acct:alice@localhost"})
+                .optionally()
+                .reply(200, {"subject": "acct:alice@localhost", "links": [{"rel": "profile", "href": "http://localhost/profile/alice"}]});
 
-            hm2.get("/.well-known/host-meta.json", function(req, res) {
-                res.json({
-                    links: [
-                        {
-                            rel: "lrdd",
-                            type: "application/json",
-                            template: "http://localhost/lrdd.json?uri={uri}"
-                        }
-                    ]
-                });
-            });
-
-            hm2.get("/lrdd.json", function(req, res) {
-                var uri = req.query.uri,
-                    parts = uri.split("@"),
-                    username = parts[0],
-                    hostname = parts[1];
-
-                if (username.substr(0, 5) == "acct:") {
-                    username = username.substr(5);
-                }
-
-                res.json({
-                    links: [
-                        {
-                            rel: "profile",
-                            href: "http://localhost/profile/" + username
-                        }
-                    ]
-                });
-            });
-
-            hm.on("error", function(err) {
-                callback(err, null);
-            });
-
-            hm2.on("error", function(err) {
-                callback(err, null);
-            });
-
-            Step(
-                function() {
-                    var opts = {key: fs.readFileSync(path.join(__dirname, "data", "localhost.key")),
-                                cert: fs.readFileSync(path.join(__dirname, "data", "localhost.crt"))};
-
-                    listen(servers, https.createServer(opts, hm), 443, this.parallel());
-                    listen(servers, http.createServer(hm2), 80, this.parallel());
-                },
-                function(err) {
-                    callback(err, hm, hm2);
-                }
-            );
-        }, {timeout: 10000});
-
-        after(function() {
-            return closeServers(servers);
+            forbid(nock("http://localhost"))
+                .get("/lrdd.json")
+                .query({"uri": "alice@localhost"})
+                .optionally()
+                .reply(200, {"subject": "alice@localhost", "links": [{"rel": "profile", "href": "http://localhost/profile/alice"}]});
         });
 
-        it("it works", function() {
-            assert.ifError(err);
-            assert.strictEqual(typeof hm, "function");
-            assert.strictEqual(typeof hm2, "function");
+        it("it installs the HTTP fixtures", function() {
+            assert.ok(nock.activeMocks().length > 0);
         });
 
         describe("and we get webfinger data with httpsOnly flag set", function() {

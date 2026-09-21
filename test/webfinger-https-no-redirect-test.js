@@ -16,88 +16,59 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-var Step = require("step"),
-    assert = require("node:assert"),
-    express = require("express"),
-    https = require("https"),
-    wf = require("../lib/webfinger"),
-    fs = require("fs"),
-    path = require("path");
+var assert = require("node:assert"),
+    nock = require("nock"),
+    wf = require("../lib/webfinger");
 
-var {describe, it, before, after} = require("node:test");
-var {listen, closeServers} = require("./helpers/servers");
-var http = require("node:http");
-
-process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+var {describe, it, before} = require("node:test");
+var {useNock, forbid} = require("./helpers/nock");
 
 describe("Webfinger should not redirect to HTTP", function() {
-    describe("When we run an HTTPS app that redirects to HTTP for Webfinger", function() {
-        var err, app, sapp;
-        var servers = [];
+    useNock();
 
-        before(function(context, done) {
-            var onResult = function(error, value1, value2) {
-                err = error;
-                app = value1;
-                sapp = value2;
-                done(error);
-            };
+    describe("When an HTTPS service redirects to HTTP for Webfinger", function() {
+        before(function() {
+            nock("https://localhost")
+                .get("/.well-known/webfinger")
+                .query({"resource": "acct:alice@localhost"})
+                .reply(303, "Redirect", {"Location": "http://localhost/.well-known/webfinger?resource=acct%3Aalice%40localhost"});
 
-            app = express();
-            sapp = express();
-            var opts;
-            var callback = onResult;
+            forbid(nock("http://localhost"))
+                .get("/.well-known/webfinger")
+                .query({"resource": "acct:alice@localhost"})
+                .optionally()
+                .reply(200, {"subject": "acct:alice@localhost", "links": [{"rel": "profile", "href": "https://localhost/profile/alice"}]});
 
-            // Secure app redirects to insecure
+            nock("https://localhost")
+                .get("/.well-known/webfinger")
+                .query({"resource": "alice@localhost"})
+                .reply(303, "Redirect", {"Location": "http://localhost/.well-known/webfinger?resource=alice%40localhost"});
 
-            sapp.get("/.well-known/webfinger", function(req, res) {
-                var host = req.header('Host');
-                res.redirect(303, 'http://'+host+req.url);
-            });
+            forbid(nock("http://localhost"))
+                .get("/.well-known/webfinger")
+                .query({"resource": "alice@localhost"})
+                .optionally()
+                .reply(200, {"subject": "alice@localhost", "links": [{"rel": "profile", "href": "https://localhost/profile/alice"}]});
 
-            app.get("/.well-known/webfinger", function(req, res) {
-                var uri = req.query.resource,
-                    parts = uri.split("@"),
-                    username = parts[0],
-                    hostname = parts[1];
+            nock("https://127.0.0.1")
+                .get("/.well-known/host-meta.json")
+                .reply(404, "Not found");
 
-                res.json({
-                    subject: uri,
-                    links: [
-                        {
-                            rel: "profile",
-                            href: "https://localhost/profile/" + username
-                        }
-                    ]
-                });
-            });
+            nock("https://localhost")
+                .get("/.well-known/host-meta")
+                .reply(404, "Not found");
 
-            app.on("error", function(err) {
-                callback(err, null);
-            });
+            nock("http://localhost")
+                .get("/.well-known/host-meta.json")
+                .reply(404, "Not found");
 
-            opts = {key: fs.readFileSync(path.join(__dirname, "data", "localhost.key")),
-                    cert: fs.readFileSync(path.join(__dirname, "data", "localhost.crt"))};
-
-            Step(
-                function() {
-                    listen(servers, https.createServer(opts, sapp), 443, this.parallel());
-                    listen(servers, http.createServer(app), 80, this.parallel());
-                },
-                function(err) {
-                    callback(err, app, sapp);
-                }
-            );
-        }, {timeout: 10000});
-
-        after(function() {
-            return closeServers(servers);
+            nock("http://localhost")
+                .get("/.well-known/host-meta")
+                .reply(404, "Not found");
         });
 
-        it("it works", function() {
-            assert.ifError(err);
-            assert.strictEqual(typeof app, "function");
-            assert.strictEqual(typeof sapp, "function");
+        it("it installs the HTTP fixtures", function() {
+            assert.ok(nock.activeMocks().length > 0);
         });
 
         describe("and we get a Webfinger", function() {

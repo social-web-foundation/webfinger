@@ -20,8 +20,11 @@ var assert = require("node:assert"),
     wf = require("../lib/webfinger");
 
 var {describe, it, before} = require("node:test");
+var {useNock} = require("./helpers/nock");
 
 describe("Test hostmeta for bad domain", function() {
+    useNock();
+
     [
         ["When we get host-meta data for a .invalid domain", "host-meta.invalid"],
         ["When we get host-meta data for a .example domain", "host-meta.example"],

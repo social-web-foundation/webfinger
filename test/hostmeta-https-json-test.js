@@ -17,63 +17,24 @@
 // limitations under the License.
 
 var assert = require("node:assert"),
-    express = require("express"),
-    https = require("https"),
-    wf = require("../lib/webfinger"),
-    fs = require("fs"),
-    path = require("path");
+    nock = require("nock"),
+    wf = require("../lib/webfinger");
 
-var {describe, it, before, after} = require("node:test");
-var {listen, closeServers} = require("./helpers/servers");
-
-process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+var {describe, it, before} = require("node:test");
+var {useNock} = require("./helpers/nock");
 
 describe("RFC6415 (host-meta) interface", function() {
-    describe("When we run an HTTPS app that just supports host-meta with JRD", function() {
-        var err, app;
-        var servers = [];
+    useNock();
 
-        before(function(context, done) {
-            var onResult = function(error, value1) {
-                err = error;
-                app = value1;
-                done(error);
-            };
-
-            app = express();
-            var opts;
-            var callback = onResult;
-
-            app.get("/.well-known/host-meta.json", function(req, res) {
-                res.json({
-                    links: [
-                        {
-                            rel: "lrdd",
-                            type: "application/json",
-                            template: "http://localhost/lrdd.json?uri={uri}"
-                        }
-                    ]
-                });
-            });
-
-            app.on("error", function(err) {
-                callback(err, null);
-            });
-
-            opts = {key: fs.readFileSync(path.join(__dirname, "data", "localhost.key")),
-                    cert: fs.readFileSync(path.join(__dirname, "data", "localhost.crt"))};
-
-            listen(servers, https.createServer(opts, app), 443, function(err) {
-                callback(err, app);
-            });
-        }, {timeout: 10000});
-
-        after(function() {
-            return closeServers(servers);
+    describe("When an HTTPS service just supports host-meta with JRD", function() {
+        before(function() {
+            nock("https://127.0.0.1")
+                .get("/.well-known/host-meta.json")
+                .reply(200, {"links": [{"rel": "lrdd", "type": "application/json", "template": "http://localhost/lrdd.json?uri={uri}"}]});
         });
 
-        it("it works", function() {
-            assert.ifError(err);
+        it("it installs the HTTP fixtures", function() {
+            assert.ok(nock.activeMocks().length > 0);
         });
 
         describe("and we get its host-meta data", function() {

@@ -16,101 +16,47 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-var Step = require("step"),
-    fs = require("fs"),
-    path = require("path"),
-    https = require("https"),
-    assert = require("node:assert"),
-    express = require("express"),
+var assert = require("node:assert"),
+    nock = require("nock"),
     wf = require("../lib/webfinger");
 
-var {describe, it, before, after} = require("node:test");
-var {listen, closeServers} = require("./helpers/servers");
-var http = require("node:http");
-
-process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+var {describe, it, before} = require("node:test");
+var {useNock, forbid} = require("./helpers/nock");
 
 describe("webfinger httpsOnly flag disallows redirect to HTTP-only LRDD", function() {
-    describe("When we run an HTTPS app that uses an HTTP app for LRDD", function() {
-        var err, hm, lrdd;
-        var servers = [];
+    useNock();
 
-        before(function(context, done) {
-            var onResult = function(error, value1, value2) {
-                err = error;
-                hm = value1;
-                lrdd = value2;
-                done(error);
-            };
+    describe("When an HTTPS service uses an HTTP service for LRDD", function() {
+        before(function() {
+            nock("https://localhost")
+                .get("/.well-known/webfinger")
+                .query({"resource": "acct:alice@localhost"})
+                .reply(404, "Not found");
 
-            hm = express();
-            lrdd = express();
-            var callback = onResult;
+            nock("https://localhost")
+                .get("/.well-known/webfinger")
+                .query({"resource": "alice@localhost"})
+                .reply(404, "Not found");
 
-            // parse queries
-            hm.use(express.query());
+            nock("https://127.0.0.1")
+                .get("/.well-known/host-meta.json")
+                .reply(200, {"links": [{"rel": "lrdd", "type": "application/json", "template": "http://localhost/lrdd.json?uri={uri}"}]});
 
-            hm.get("/.well-known/host-meta.json", function(req, res) {
-                res.json({
-                    links: [
-                        {
-                            rel: "lrdd",
-                            type: "application/json",
-                            template: "http://localhost/lrdd.json?uri={uri}"
-                        }
-                    ]
-                });
-            });
+            forbid(nock("http://localhost"))
+                .get("/lrdd.json")
+                .query({"uri": "acct:alice@localhost"})
+                .optionally()
+                .reply(200, {"subject": "acct:alice@localhost", "links": [{"rel": "profile", "href": "http://localhost/profile/alice"}]});
 
-            // parse queries
-            lrdd.use(express.query());
-
-            lrdd.get("/lrdd.json", function(req, res) {
-                var uri = req.query.uri,
-                    parts = uri.split("@"),
-                    username = parts[0],
-                    hostname = parts[1];
-
-                res.json({
-                    links: [
-                        {
-                            rel: "profile",
-                            href: "http://localhost/profile/" + username
-                        }
-                    ]
-                });
-            });
-
-            hm.on("error", function(err) {
-                callback(err, null);
-            });
-
-            lrdd.on("error", function(err) {
-                callback(err, null);
-            });
-
-            Step(
-                function() {
-                    var opts = {key: fs.readFileSync(path.join(__dirname, "data", "localhost.key")),
-                                cert: fs.readFileSync(path.join(__dirname, "data", "localhost.crt"))};
-
-                    listen(servers, https.createServer(opts, hm), 443, this.parallel());
-                    listen(servers, http.createServer(lrdd), 80, this.parallel());
-                },
-                function(err) {
-                    callback(err, hm, lrdd);
-                }
-            );
-        }, {timeout: 10000});
-
-        after(function() {
-            return closeServers(servers);
+            forbid(nock("http://localhost"))
+                .get("/lrdd.json")
+                .query({"uri": "alice@localhost"})
+                .optionally()
+                .reply(200, {"subject": "alice@localhost", "links": [{"rel": "profile", "href": "http://localhost/profile/alice"}]});
         });
 
-        it("it works", function() {
-            assert.ifError(err);
-            assert.strictEqual(typeof hm, "function");
-            assert.strictEqual(typeof lrdd, "function");
+        it("it installs the HTTP fixtures", function() {
+            assert.ok(nock.activeMocks().length > 0);
         });
 
         describe("and we get a webfinger with https-only flag set", function() {

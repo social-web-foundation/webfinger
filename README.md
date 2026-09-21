@@ -115,19 +115,10 @@ webfinger or a hostname, call this and we'll do it for you.
 
 Use Node.js 22 to run the tests with the built-in Node Test Runner. The
 package's runtime engine range is broader than the test tooling supports.
-Test files run sequentially because they share the same server ports.
+Nock intercepts HTTP and HTTPS requests, and the tests mock DNS resolution.
+No servers, certificates, network access, or elevated privileges are needed.
 
-The tests set up servers that listen on ports 80 and 443. On most
-Unix-like systems, you have to be root to listen on ports below 1024 or whatever.
-
-So, to run the unit tests, you have to go:
-
-    sudo npm test
-
-It's probably not a good idea to sudo any script without thinking
-about it pretty hard. I suggest that if you're doing development, you
-do it in a virtual machine so you're not sudo'ing dangerous stuff on
-your main computer.
+    npm test
 
 # Bugs
 

@@ -17,75 +17,43 @@
 // limitations under the License.
 
 var assert = require("node:assert"),
-    express = require("express"),
+    nock = require("nock"),
     wf = require("../lib/webfinger");
 
-var {describe, it, before, after} = require("node:test");
-var {listen, closeServers} = require("./helpers/servers");
-var http = require("node:http");
+var {describe, it, before} = require("node:test");
+var {useNock} = require("./helpers/nock");
 
 describe("RFC6415 (host-meta) interface", function() {
-    describe("When we run an HTTP app that just supports host-meta with XRD", function() {
-        var err, app;
-        var servers = [];
+    useNock();
 
-        before(function(context, done) {
-            var onResult = function(error, value1) {
-                err = error;
-                app = value1;
-                done(error);
-            };
+    describe("When an HTTP service just supports host-meta with XRD", function() {
+        before(function() {
+            nock("https://localhost")
+                .get("/.well-known/webfinger")
+                .query({"resource": "acct:alice@localhost"})
+                .replyWithError(Object.assign(new Error("Connection refused"), {code: "ECONNREFUSED"}));
 
-            app = express();
-            var callback = onResult;
+            nock("https://localhost")
+                .get("/.well-known/webfinger")
+                .query({"resource": "alice@localhost"})
+                .replyWithError(Object.assign(new Error("Connection refused"), {code: "ECONNREFUSED"}));
 
-            // parse queries
-            app.use(express.query());
+            nock("https://127.0.0.1")
+                .get("/.well-known/host-meta.json")
+                .replyWithError(Object.assign(new Error("Connection refused"), {code: "ECONNREFUSED"}));
 
-            app.get("/.well-known/host-meta.json", function(req, res) {
-                res.json({
-                    links: [
-                        {
-                            rel: "lrdd",
-                            type: "application/json",
-                            template: "http://localhost/lrdd.json?uri={uri}"
-                        }
-                    ]
-                });
-            });
-            app.get("/lrdd.json", function(req, res) {
-                var uri = req.query.uri,
-                    parts = uri.split("@"),
-                    username = parts[0],
-                    hostname = parts[1];
+            nock("http://localhost")
+                .get("/.well-known/host-meta.json")
+                .reply(200, {"links": [{"rel": "lrdd", "type": "application/json", "template": "http://localhost/lrdd.json?uri={uri}"}]});
 
-                if (username.substr(0, 5) == "acct:") {
-                    username = username.substr(5);
-                }
-
-                res.json({
-                    links: [
-                        {
-                            rel: "profile",
-                            href: "http://localhost/profile/" + username
-                        }
-                    ]
-                });
-            });
-            app.on("error", function(err) {
-                callback(err, null);
-            });
-            listen(servers, http.createServer(app), 80, function(err) {
-                callback(err, app);
-            });
-        }, {timeout: 10000});
-
-        after(function() {
-            return closeServers(servers);
+            nock("http://localhost")
+                .get("/lrdd.json")
+                .query({"uri": "acct:alice@localhost"})
+                .reply(200, {"links": [{"rel": "profile", "href": "http://localhost/profile/alice"}]});
         });
 
-        it("it works", function() {
-            assert.ifError(err);
+        it("it installs the HTTP fixtures", function() {
+            assert.ok(nock.activeMocks().length > 0);
         });
 
         describe("and we get a webfinger's metadata", function() {
