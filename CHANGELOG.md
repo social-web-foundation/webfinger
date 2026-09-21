@@ -30,6 +30,12 @@ the tagged release commits.
 
 - Corrected malformed XML in a test fixture.
 
+### Security
+
+- Upgraded xml2js from 0.1.14 to 0.6.2 to address CVE-2023-0842 (prototype
+  pollution). Updated XRD conversion for the current parser output and native
+  promise API while preserving the existing JRD output.
+
 ## [0.4.2] - 2013-07-17
 
 ### Changed
