@@ -3,7 +3,7 @@
 
     "description": "Client library for Host Meta (RFC 6415) and Webfinger",
 
-    "homepage": "http://github.com/e14n/webfinger",
+    "homepage": "https://github.com/social-web-foundation/webfinger",
 
     "version": "0.4.2",
 
@@ -13,7 +13,7 @@
         "node": ">=0.8.x"
     },
 
-    "author": "Evan Prodromou <evan@e14n.com>",
+    "author": "Evan Prodromou <evanp@socialweb.foundation>",
 
     "scripts": {
         "test": "vows -i test/*-test.js"
@@ -37,13 +37,13 @@
 
     "repository": {
         "type":  "git",
-        "url": "git://github.com/e14n/webfinger.git"
+        "url": "git://github.com/social-web-foundation/webfinger.git"
     },
 
     "licenses": [
         {
             "type": "Apache 2.0",
-            "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+            "url": "https://www.apache.org/licenses/LICENSE-2.0.html"
         }
     ]
 
