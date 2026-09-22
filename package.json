@@ -3,7 +3,7 @@
     "description": "Client library for Host Meta (RFC 6415) and Webfinger",
     "homepage": "https://github.com/social-web-foundation/webfinger",
     "version": "0.4.2",
-    "keywords": ["webfinger", "hostmeta", "discovery", "xrd", "jrd", "lrdd"],
+    "keywords": ["webfinger", "discovery", "jrd"],
     "engines": {
         "node": "22.x || 24.x || 26.x"
     },
