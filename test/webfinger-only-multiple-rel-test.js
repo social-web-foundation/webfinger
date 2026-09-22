@@ -23,7 +23,7 @@ var assert = require("node:assert"),
 var {describe, it, before} = require("node:test");
 var {useNock} = require("./helpers/nock");
 
-describe("RFC6415 (host-meta) interface", function() {
+describe("WebFinger interface", function() {
     useNock();
 
     describe("When an HTTPS service just supports Webfinger", function() {

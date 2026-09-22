@@ -1,15 +1,8 @@
 # Webfinger
 
-Webfinger and host-meta client library for Node.js.
+Webfinger client library for Node.js.
 
-It supports:
-
-* XRD documents
-* JRD documents
-* host-meta
-* host-meta.json
-* http and https
-* RFC 6415 and the upcoming Webfinger RFC (up to draft 09)
+It supports RFC 7033.
 
 ## License
 
@@ -72,47 +65,6 @@ behaviour. Currently, the options are:
 * `webfingerOnly`: boolean flag, default `false` for whether to only use
   the .well-known/webfinger endpoint. When this is set, it won't
   use host-meta and LRDD endpoints as a fallback.
-
-### lrdd(address)
-
-Explicitly use Host Metadata + LRDD lookup per RFC 6415 and avoid the
-/.well-known/webfinger endpoint. Use this if you know a host only
-supports LRDD.
-
-### lrdd(address, options)
-
-As above, but with fine control of options. Options include:
-
-* `httpsOnly`: boolean flag, default `false` for whether to only use
-  HTTPS for communicating with the server. When this is set, it won't
-  use Webfinger, host-meta or LRDD endpoints that aren't HTTPS, and won't
-  follow redirect requests to HTTP endpoints.
-
-### hostmeta(address)
-
-Resolves to link data for the host at `address` in JRD format.
-
-### hostmeta(address, options)
-
-As above, but you can use the `options` object to control
-behaviour. Currently, the options are:
-
-* `httpsOnly`: boolean flag, default `false`, for whether to only use
-  HTTPS for communicating with the server. When this is set, it won't
-  use host-meta or host-meta.json endpoints that aren't HTTPS, and won't
-  follow redirect requests to HTTP endpoints.
-
-### discover(address)
-
-Resolves to link data for `address` in JRD format.
-
-If you've got an address and you don't want to bother figuring out if it's a
-webfinger or a hostname, call this and we'll do it for you.
-
-### xrd2jrd(xml)
-
-Resolves to the JRD representation of an XRD document. Invalid XML rejects
-the promise.
 
 ## Testing
 

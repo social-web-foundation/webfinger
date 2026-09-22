@@ -32,20 +32,9 @@ describe("Webfinger module interface", function() {
             assert.ok(mod !== null && typeof mod === "object" && !Array.isArray(mod));
         });
 
-        it("it has the xrd2jrd() export", function() {
-            assert.strictEqual(typeof mod.xrd2jrd, "function");
-        });
-
         it("it has the webfinger() export", function() {
             assert.strictEqual(typeof mod.webfinger, "function");
         });
 
-        it("it has the hostmeta() export", function() {
-            assert.strictEqual(typeof mod.hostmeta, "function");
-        });
-
-        it("it has the discover() export", function() {
-            assert.strictEqual(typeof mod.discover, "function");
-        });
     });
 });

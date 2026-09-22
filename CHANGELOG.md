@@ -17,8 +17,7 @@ the tagged release commits.
 
 ### Changed
 
-- **Breaking:** `webfinger()`, `hostmeta()`, `lrdd()`, `discover()`, and
-  `xrd2jrd()` now return promises instead of accepting callbacks. Errors reject
+- **Breaking:** `webfinger()` now returns promises instead of accepting callbacks. Errors reject
   the returned promise. Internal control flow uses async/await in place of Step.
 - **Breaking:** Supported Node.js versions are now 22.x, 24.x, and 26.x.
 - Replaced Vows with the built-in Node.js test runner and native assertions.

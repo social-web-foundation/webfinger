@@ -19,7 +19,7 @@ describe('WebFinger JRD media type', function () {
       .query({ resource })
       .reply(200, document, { 'Content-Type': 'application/jrd+json' })
 
-    const result = await wf.webfinger(resource, null, { webfingerOnly: true })
+    const result = await wf.webfinger(resource)
 
     assert.deepEqual(result, document)
   })

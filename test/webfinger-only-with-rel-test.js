@@ -1,6 +1,6 @@
 // webfinger-only-test.js
 //
-// Test discovery just using Webfinger without host-meta
+// Test direct WebFinger discovery
 //
 // Copyright 2012, E14N https://e14n.com/
 //
@@ -23,7 +23,7 @@ var assert = require("node:assert"),
 var {describe, it, before} = require("node:test");
 var {useNock} = require("./helpers/nock");
 
-describe("RFC6415 (host-meta) interface", function() {
+describe("WebFinger interface", function() {
     useNock();
 
     describe("When an HTTPS service just supports Webfinger", function() {
