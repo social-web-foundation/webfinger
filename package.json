@@ -1,47 +1,33 @@
 {
     "name": "webfinger",
-
     "description": "Client library for Host Meta (RFC 6415) and Webfinger",
-
     "homepage": "https://github.com/social-web-foundation/webfinger",
-
     "version": "0.4.2",
-
     "keywords": ["webfinger", "hostmeta", "discovery", "xrd", "jrd", "lrdd"],
-
     "engines": {
         "node": "22.x || 24.x || 26.x"
     },
-
     "author": "Evan Prodromou <evanp@socialweb.foundation>",
-
     "scripts": {
         "test": "node --test test/*-test.js"
     },
-
     "main": "./lib/webfinger.js",
-
     "directories": {
         "lib": "./lib/"
     },
-
     "devDependencies": {
         "nock": "^14.0.17"
     },
-
     "dependencies": {
     },
-
     "repository": {
         "type":  "git",
         "url": "git://github.com/social-web-foundation/webfinger.git"
     },
-
     "licenses": [
         {
             "type": "Apache 2.0",
             "url": "https://www.apache.org/licenses/LICENSE-2.0.html"
         }
     ]
-
 }
