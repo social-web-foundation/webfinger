@@ -16,25 +16,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-var assert = require("node:assert");
+const assert = require('node:assert')
 
-var {describe, it, before} = require("node:test");
+const { describe, it, before } = require('node:test')
 
-describe("Webfinger module interface", function() {
-    describe("When we get the app module", function() {
-        var mod;
+describe('Webfinger module interface', function () {
+  describe('When we get the app module', function () {
+    let mod
 
-        before(function() {
-            mod = require("../lib/webfinger");
-        });
+    before(function () {
+      mod = require('../lib/webfinger')
+    })
 
-        it("there is one", function() {
-            assert.ok(mod !== null && typeof mod === "object" && !Array.isArray(mod));
-        });
+    it('there is one', function () {
+      assert.ok(mod !== null && typeof mod === 'object' && !Array.isArray(mod))
+    })
 
-        it("it has the webfinger() export", function() {
-            assert.strictEqual(typeof mod.webfinger, "function");
-        });
-
-    });
-});
+    it('it has the webfinger() export', function () {
+      assert.strictEqual(typeof mod.webfinger, 'function')
+    })
+  })
+})

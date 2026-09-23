@@ -16,28 +16,28 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-var assert = require("node:assert"),
-    wf = require("../lib/webfinger");
+const assert = require('node:assert')
+const wf = require('../lib/webfinger')
 
-var {describe, it} = require("node:test");
-var {useNock} = require("./helpers/nock");
+const { describe, it } = require('node:test')
+const { useNock } = require('./helpers/nock')
 
-describe("Test webfinger for bad domain", function() {
-    useNock();
+describe('Test webfinger for bad domain', function () {
+  useNock();
 
-    [
-        ["When we get webfinger data for a user in a .invalid domain", "webfinger.invalid"],
-        ["When we get webfinger data for a user in a .example domain", "webfinger.example"],
-        ["When we get webfinger data for a user in example.com", "example.com"],
-        ["When we get webfinger data for a user in example.org", "example.org"],
-        ["When we get webfinger data for a user in example.net", "example.net"]
-    ].forEach(function([name, domain]) {
-        describe(name, function() {
-            it("it works", async function() {
-                await assert.rejects(wf.webfinger("user@"+domain), {
-                    message: "Invalid hostname: " + domain
-                });
-            });
-        });
-    });
-});
+  [
+    ['When we get webfinger data for a user in a .invalid domain', 'webfinger.invalid'],
+    ['When we get webfinger data for a user in a .example domain', 'webfinger.example'],
+    ['When we get webfinger data for a user in example.com', 'example.com'],
+    ['When we get webfinger data for a user in example.org', 'example.org'],
+    ['When we get webfinger data for a user in example.net', 'example.net']
+  ].forEach(function ([name, domain]) {
+    describe(name, function () {
+      it('it works', async function () {
+        await assert.rejects(wf.webfinger('user@' + domain), {
+          message: 'Invalid hostname: ' + domain
+        })
+      })
+    })
+  })
+})

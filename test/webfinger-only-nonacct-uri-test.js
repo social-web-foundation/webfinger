@@ -16,50 +16,50 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-var assert = require("node:assert"),
-    nock = require("nock"),
-    wf = require("../lib/webfinger");
+const assert = require('node:assert')
+const nock = require('nock')
+const wf = require('../lib/webfinger')
 
-var {describe, it, before} = require("node:test");
-var {useNock} = require("./helpers/nock");
+const { describe, it, before } = require('node:test')
+const { useNock } = require('./helpers/nock')
 
-describe("WebFinger interface", function() {
-    useNock();
+describe('WebFinger interface', function () {
+  useNock()
 
-    describe("When an HTTPS service just supports Webfinger", function() {
-        before(function() {
-            nock("https://localhost")
-                .get("/.well-known/webfinger")
-                .query({"resource": "http://localhost/profile/alice"})
-                .reply(200, {"subject": "http://localhost/profile/alice", "links": [{"rel": "feed", "href": "http://localhost/profile/alice/feed"}]});
-        });
+  describe('When an HTTPS service just supports Webfinger', function () {
+    before(function () {
+      nock('https://localhost')
+        .get('/.well-known/webfinger')
+        .query({ resource: 'http://localhost/profile/alice' })
+        .reply(200, { subject: 'http://localhost/profile/alice', links: [{ rel: 'feed', href: 'http://localhost/profile/alice/feed' }] })
+    })
 
-        it("it installs the HTTP fixtures", function() {
-            assert.ok(nock.activeMocks().length > 0);
-        });
+    it('it installs the HTTP fixtures', function () {
+      assert.ok(nock.activeMocks().length > 0)
+    })
 
-        describe("and we get an http URL's metadata", function() {
-            var jrd;
+    describe("and we get an http URL's metadata", function () {
+      let jrd
 
-            before(async function() {
-                jrd = await wf.webfinger("http://localhost/profile/alice");
-            }, {timeout: 10000});
+      before(async function () {
+        jrd = await wf.webfinger('http://localhost/profile/alice')
+      }, { timeout: 10000 })
 
-            it("it works", function() {
-                assert.ok(jrd !== null && typeof jrd === "object" && !Array.isArray(jrd));
-            });
+      it('it works', function () {
+        assert.ok(jrd !== null && typeof jrd === 'object' && !Array.isArray(jrd))
+      })
 
-            it("it has the link", function() {
-                assert.ok(jrd !== null && typeof jrd === "object" && !Array.isArray(jrd));
-                assert.ok(Object.hasOwn(jrd, "links"));
-                assert.ok(Array.isArray(jrd.links));
-                assert.strictEqual(jrd.links.length, 1);
-                assert.ok(jrd.links[0] !== null && typeof jrd.links[0] === "object" && !Array.isArray(jrd.links[0]));
-                assert.ok(Object.hasOwn(jrd.links[0], "rel"));
-                assert.equal(jrd.links[0].rel, "feed");
-                assert.ok(Object.hasOwn(jrd.links[0], "href"));
-                assert.equal(jrd.links[0].href, "http://localhost/profile/alice/feed");
-            });
-        });
-    });
-});
+      it('it has the link', function () {
+        assert.ok(jrd !== null && typeof jrd === 'object' && !Array.isArray(jrd))
+        assert.ok(Object.hasOwn(jrd, 'links'))
+        assert.ok(Array.isArray(jrd.links))
+        assert.strictEqual(jrd.links.length, 1)
+        assert.ok(jrd.links[0] !== null && typeof jrd.links[0] === 'object' && !Array.isArray(jrd.links[0]))
+        assert.ok(Object.hasOwn(jrd.links[0], 'rel'))
+        assert.equal(jrd.links[0].rel, 'feed')
+        assert.ok(Object.hasOwn(jrd.links[0], 'href'))
+        assert.equal(jrd.links[0].href, 'http://localhost/profile/alice/feed')
+      })
+    })
+  })
+})
