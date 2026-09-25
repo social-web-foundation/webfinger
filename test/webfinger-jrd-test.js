@@ -1,8 +1,8 @@
-const assert = require('node:assert/strict')
-const { describe, it } = require('node:test')
-const nock = require('nock')
-const wf = require('../lib/webfinger')
-const { useNock } = require('./helpers/nock')
+import assert from 'node:assert/strict'
+import { describe, it } from 'node:test'
+import nock from 'nock'
+import * as wf from '../lib/webfinger.js'
+import { useNock } from './helpers/nock.js'
 
 describe('WebFinger JRD media type', function () {
   useNock()

@@ -11,6 +11,7 @@
     "scripts": {
         "test": "node --test test/*-test.js"
     },
+    "type": "module",
     "main": "./lib/webfinger.js",
     "directories": {
         "lib": "./lib/"

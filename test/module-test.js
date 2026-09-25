@@ -16,16 +16,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-const assert = require('node:assert')
+import assert from 'node:assert'
 
-const { describe, it, before } = require('node:test')
+import { describe, it, before } from 'node:test'
 
 describe('Webfinger module interface', function () {
   describe('When we get the app module', function () {
     let mod
 
-    before(function () {
-      mod = require('../lib/webfinger')
+    before(async function () {
+      mod = await import('../lib/webfinger.js')
     })
 
     it('there is one', function () {

@@ -16,12 +16,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-const assert = require('node:assert')
-const nock = require('nock')
-const wf = require('../lib/webfinger')
+import assert from 'node:assert'
+import nock from 'nock'
+import * as wf from '../lib/webfinger.js'
 
-const { describe, it, before } = require('node:test')
-const { useNock } = require('./helpers/nock')
+import { describe, it, before } from 'node:test'
+import { useNock } from './helpers/nock.js'
 
 describe('WebFinger interface', function () {
   useNock()

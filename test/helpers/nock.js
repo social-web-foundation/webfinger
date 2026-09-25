@@ -1,6 +1,6 @@
-const assert = require('node:assert/strict')
-const { before, after } = require('node:test')
-const nock = require('nock')
+import assert from 'node:assert/strict'
+import { before, after } from 'node:test'
+import nock from 'nock'
 
 const unexpectedRequests = []
 
@@ -28,4 +28,4 @@ function useNock () {
   })
 }
 
-module.exports = { useNock }
+export { useNock }

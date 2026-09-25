@@ -1,10 +1,8 @@
-'use strict'
-
-const assert = require('node:assert/strict')
-const { describe, it, beforeEach } = require('node:test')
-const nock = require('nock')
-const { webfinger } = require('../lib/webfinger')
-const { useNock } = require('./helpers/nock')
+import assert from 'node:assert/strict'
+import { describe, it, beforeEach } from 'node:test'
+import nock from 'nock'
+import { webfinger } from '../lib/webfinger.js'
+import { useNock } from './helpers/nock.js'
 
 describe('JRD interface returned by webfinger()', function () {
   useNock()
