@@ -20,6 +20,8 @@ the tagged release commits.
 - **Breaking:** `webfinger()` now returns promises instead of accepting callbacks. Errors reject
   the returned promise. Internal control flow uses async/await in place of Step.
 - **Breaking:** Supported Node.js versions are now 22.x, 24.x, and 26.x.
+- Reserved example and invalid domains now follow normal HTTPS discovery
+  instead of being rejected before a request is attempted.
 - Replaced Vows with the built-in Node.js test runner and native assertions.
 - Replaced Express test servers with Nock HTTP mocks and mocked DNS lookups.
   Tests no longer require root privileges, listening ports, or TLS certificates.
