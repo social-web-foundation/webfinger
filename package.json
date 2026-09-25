@@ -2,7 +2,7 @@
     "name": "webfinger",
     "description": "Modern, zero-dependency WebFinger client (RFC 7033) for Node.js — promise-based JRD discovery for acct: URIs and URLs, built for ActivityPub",
     "homepage": "https://github.com/social-web-foundation/webfinger",
-    "version": "0.5.0",
+    "version": "0.5.1",
     "keywords": [
         "webfinger",
         "rfc7033",
