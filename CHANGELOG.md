@@ -8,6 +8,13 @@ the tagged release commits.
 
 ## [Unreleased]
 
+## [0.5.1] - 2026-09-25
+
+### Changed
+
+- Slim down npm package contents to 4 files via `files` allowlist (`lib/`). Only `lib/webfinger.js`, `README.md`, `LICENSE.md`, and `package.json` are now published, removing `.github/`, `test/`, `CHANGELOG.md`, `CODE_OF_CONDUCT.md` and other dev files from the tarball. Unpacked size drops to ~19.8 kB.
+- Modernize package metadata to use `license: "Apache-2.0"` alongside legacy `licenses` field.
+
 ## [0.5.0] - 2026-09-25
 
 ### Added
@@ -149,7 +156,8 @@ the tagged release commits.
 - A `discover()` helper that selects host-meta or WebFinger discovery based on
   the supplied address.
 
-[Unreleased]: https://github.com/social-web-foundation/webfinger/compare/v0.5.0...HEAD
+[Unreleased]: https://github.com/social-web-foundation/webfinger/compare/v0.5.1...HEAD
+[0.5.1]: https://github.com/social-web-foundation/webfinger/compare/v0.5.0...v0.5.1
 [0.5.0]: https://github.com/social-web-foundation/webfinger/compare/v0.4.2...v0.5.0
 [0.4.2]: https://github.com/social-web-foundation/webfinger/compare/v0.4.1...v0.4.2
 [0.4.1]: https://github.com/social-web-foundation/webfinger/compare/v0.4.0...v0.4.1
