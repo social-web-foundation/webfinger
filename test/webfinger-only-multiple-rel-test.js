@@ -50,13 +50,12 @@ describe('WebFinger interface', function () {
       })
 
       it('it has the links', function () {
-        let profiles, avatars
         assert.ok(jrd !== null && typeof jrd === 'object' && !Array.isArray(jrd))
         assert.strictEqual(typeof jrd.link, 'function')
         assert.ok(Array.isArray(jrd.links))
         assert.strictEqual(jrd.links.length, 2)
 
-        profiles = jrd.links.filter(function (item) { return item.rel == 'profile' })
+        const profiles = jrd.links.filter(function (item) { return item.rel === 'profile' })
 
         assert.strictEqual(profiles.length, 1)
         assert.ok(profiles[0] !== null && typeof profiles[0] === 'object' && !Array.isArray(profiles[0]))
@@ -65,7 +64,7 @@ describe('WebFinger interface', function () {
         assert.ok(Object.hasOwn(profiles[0], 'href'))
         assert.equal(profiles[0].href, 'https://foo.example/profile/user1')
 
-        avatars = jrd.links.filter(function (item) { return item.rel == 'avatar' })
+        const avatars = jrd.links.filter(function (item) { return item.rel === 'avatar' })
 
         assert.strictEqual(avatars.length, 1)
         assert.ok(avatars[0] !== null && typeof avatars[0] === 'object' && !Array.isArray(avatars[0]))

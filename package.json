@@ -3,13 +3,18 @@
     "description": "Client library for Host Meta (RFC 6415) and Webfinger",
     "homepage": "https://github.com/social-web-foundation/webfinger",
     "version": "0.4.2",
-    "keywords": ["webfinger", "discovery", "jrd"],
+    "keywords": [
+        "webfinger",
+        "discovery",
+        "jrd"
+    ],
     "engines": {
         "node": "22.x || 24.x || 26.x"
     },
     "author": "Evan Prodromou <evanp@socialweb.foundation>",
     "scripts": {
-        "test": "node --test test/*-test.js"
+        "test": "node --test test/*-test.js",
+        "lint": "standard"
     },
     "type": "module",
     "main": "./lib/webfinger.js",
@@ -17,12 +22,11 @@
         "lib": "./lib/"
     },
     "devDependencies": {
-        "nock": "^14.0.17"
-    },
-    "dependencies": {
+        "nock": "^14.0.17",
+        "standard": "^17.1.2"
     },
     "repository": {
-        "type":  "git",
+        "type": "git",
         "url": "git://github.com/social-web-foundation/webfinger.git"
     },
     "licenses": [
