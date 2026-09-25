@@ -6,8 +6,8 @@ It supports RFC 7033.
 
 ## License
 
-Copyright 2012,2013 E14N https://e14n.com/
-Copyright 2026, Social Web Foundation https://socialwebfoundation.org/
+- Copyright 2012,2013 E14N https://e14n.com/
+- Copyright 2026, Social Web Foundation https://socialwebfoundation.org/
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
