@@ -8,13 +8,13 @@ describe('WebFinger JRD media type', function () {
   useNock()
 
   it('accepts an endpoint that returns only application/jrd+json', async function () {
-    const resource = 'https://localhost/profile/alice'
+    const resource = 'https://foo.example/profile/user1'
     const document = {
       subject: resource,
       links: [{ rel: 'profile', href: resource }]
     }
 
-    nock('https://localhost')
+    nock('https://foo.example')
       .get('/.well-known/webfinger')
       .query({ resource })
       .reply(200, document, { 'Content-Type': 'application/jrd+json' })

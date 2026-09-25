@@ -28,20 +28,20 @@ describe('WebFinger interface', function () {
 
   describe('When an HTTPS service just supports Webfinger', function () {
     before(function () {
-      nock('https://localhost')
+      nock('https://foo.example')
         .get('/.well-known/webfinger')
-        .query({ resource: 'acct:alice@localhost', rel: 'profile' })
-        .reply(200, { subject: 'acct:alice@localhost', links: [{ rel: 'profile', href: 'https://localhost/profile/alice' }] })
+        .query({ resource: 'acct:user1@foo.example', rel: 'profile' })
+        .reply(200, { subject: 'acct:user1@foo.example', links: [{ rel: 'profile', href: 'https://foo.example/profile/user1' }] })
 
-      nock('https://localhost')
+      nock('https://foo.example')
         .get('/.well-known/webfinger')
-        .query({ resource: 'acct:alice@localhost', rel: 'avatar' })
-        .reply(200, { subject: 'acct:alice@localhost', links: [{ rel: 'avatar', href: 'https://localhost/avatar/alice.png' }] })
+        .query({ resource: 'acct:user1@foo.example', rel: 'avatar' })
+        .reply(200, { subject: 'acct:user1@foo.example', links: [{ rel: 'avatar', href: 'https://foo.example/avatar/user1.png' }] })
 
-      nock('https://localhost')
+      nock('https://foo.example')
         .get('/.well-known/webfinger')
-        .query({ resource: 'acct:alice@localhost', rel: 'http://web.example/unrecognized' })
-        .reply(200, { subject: 'acct:alice@localhost', links: [] })
+        .query({ resource: 'acct:user1@foo.example', rel: 'http://web.example/unrecognized' })
+        .reply(200, { subject: 'acct:user1@foo.example', links: [] })
     })
 
     it('it installs the HTTP fixtures', function () {
@@ -52,7 +52,7 @@ describe('WebFinger interface', function () {
       let jrd
 
       before(async function () {
-        jrd = await wf.webfinger('alice@localhost', 'profile')
+        jrd = await wf.webfinger('user1@foo.example', 'profile')
       }, { timeout: 10000 })
 
       it('it works', function () {
@@ -68,7 +68,7 @@ describe('WebFinger interface', function () {
         assert.ok(Object.hasOwn(jrd.links[0], 'rel'))
         assert.equal(jrd.links[0].rel, 'profile')
         assert.ok(Object.hasOwn(jrd.links[0], 'href'))
-        assert.equal(jrd.links[0].href, 'https://localhost/profile/alice')
+        assert.equal(jrd.links[0].href, 'https://foo.example/profile/user1')
       })
     })
 
@@ -76,7 +76,7 @@ describe('WebFinger interface', function () {
       let jrd
 
       before(async function () {
-        jrd = await wf.webfinger('alice@localhost', 'avatar')
+        jrd = await wf.webfinger('user1@foo.example', 'avatar')
       }, { timeout: 10000 })
 
       it('it works', function () {
@@ -92,7 +92,7 @@ describe('WebFinger interface', function () {
         assert.ok(Object.hasOwn(jrd.links[0], 'rel'))
         assert.equal(jrd.links[0].rel, 'avatar')
         assert.ok(Object.hasOwn(jrd.links[0], 'href'))
-        assert.equal(jrd.links[0].href, 'https://localhost/avatar/alice.png')
+        assert.equal(jrd.links[0].href, 'https://foo.example/avatar/user1.png')
       })
     })
 
@@ -100,7 +100,7 @@ describe('WebFinger interface', function () {
       let jrd
 
       before(async function () {
-        jrd = await wf.webfinger('alice@localhost', 'http://web.example/unrecognized')
+        jrd = await wf.webfinger('user1@foo.example', 'http://web.example/unrecognized')
       }, { timeout: 10000 })
 
       it('it works', function () {

@@ -28,10 +28,10 @@ describe('WebFinger interface', function () {
 
   describe('When an HTTPS service just supports Webfinger', function () {
     before(function () {
-      nock('https://localhost')
+      nock('https://foo.example')
         .get('/.well-known/webfinger')
-        .query({ resource: 'acct:alice@localhost', rel: ['profile', 'avatar'] })
-        .reply(200, { subject: 'acct:alice@localhost', links: [{ rel: 'profile', href: 'https://localhost/profile/alice' }, { rel: 'avatar', href: 'https://localhost/avatar/alice.png' }] })
+        .query({ resource: 'acct:user1@foo.example', rel: ['profile', 'avatar'] })
+        .reply(200, { subject: 'acct:user1@foo.example', links: [{ rel: 'profile', href: 'https://foo.example/profile/user1' }, { rel: 'avatar', href: 'https://foo.example/avatar/user1.png' }] })
     })
 
     it('it installs the HTTP fixtures', function () {
@@ -42,7 +42,7 @@ describe('WebFinger interface', function () {
       let jrd
 
       before(async function () {
-        jrd = await wf.webfinger('alice@localhost', ['profile', 'avatar'])
+        jrd = await wf.webfinger('user1@foo.example', ['profile', 'avatar'])
       }, { timeout: 10000 })
 
       it('it works', function () {
@@ -63,7 +63,7 @@ describe('WebFinger interface', function () {
         assert.ok(Object.hasOwn(profiles[0], 'rel'))
         assert.equal(profiles[0].rel, 'profile')
         assert.ok(Object.hasOwn(profiles[0], 'href'))
-        assert.equal(profiles[0].href, 'https://localhost/profile/alice')
+        assert.equal(profiles[0].href, 'https://foo.example/profile/user1')
 
         avatars = jrd.links.filter(function (item) { return item.rel == 'avatar' })
 
@@ -72,7 +72,7 @@ describe('WebFinger interface', function () {
         assert.ok(Object.hasOwn(avatars[0], 'rel'))
         assert.equal(avatars[0].rel, 'avatar')
         assert.ok(Object.hasOwn(avatars[0], 'href'))
-        assert.equal(avatars[0].href, 'https://localhost/avatar/alice.png')
+        assert.equal(avatars[0].href, 'https://foo.example/avatar/user1.png')
       })
     })
   })

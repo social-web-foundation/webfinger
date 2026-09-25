@@ -28,10 +28,10 @@ describe('WebFinger interface', function () {
 
   describe('When an HTTPS service just supports Webfinger', function () {
     before(function () {
-      nock('https://localhost')
+      nock('https://foo.example')
         .get('/.well-known/webfinger')
-        .query({ resource: 'http://localhost/profile/alice' })
-        .reply(200, { subject: 'http://localhost/profile/alice', links: [{ rel: 'feed', href: 'http://localhost/profile/alice/feed' }] })
+        .query({ resource: 'http://foo.example/profile/user1' })
+        .reply(200, { subject: 'http://foo.example/profile/user1', links: [{ rel: 'feed', href: 'http://foo.example/profile/user1/feed' }] })
     })
 
     it('it installs the HTTP fixtures', function () {
@@ -42,7 +42,7 @@ describe('WebFinger interface', function () {
       let jrd
 
       before(async function () {
-        jrd = await wf.webfinger('http://localhost/profile/alice')
+        jrd = await wf.webfinger('http://foo.example/profile/user1')
       }, { timeout: 10000 })
 
       it('it works', function () {
@@ -58,7 +58,7 @@ describe('WebFinger interface', function () {
         assert.ok(Object.hasOwn(jrd.links[0], 'rel'))
         assert.equal(jrd.links[0].rel, 'feed')
         assert.ok(Object.hasOwn(jrd.links[0], 'href'))
-        assert.equal(jrd.links[0].href, 'http://localhost/profile/alice/feed')
+        assert.equal(jrd.links[0].href, 'http://foo.example/profile/user1/feed')
       })
     })
   })
