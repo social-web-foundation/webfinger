@@ -10,8 +10,14 @@ the tagged release commits.
 
 ### Added
 
-- GitHub Actions CI running tests on Node.js 22, 24, and 26 for branch pushes,
-  pull requests, and version tags matching `vX.Y.Z`.
+- GitHub Actions CI running lint and tests on Node.js 22, 24, and 26 for branch
+  pushes and version tags matching `vX.Y.Z`.
+- StandardJS formatting and an `npm run lint` task.
+- Dependabot weekly checks for npm and GitHub Actions, each with a seven-day
+  cooldown.
+- Tests for JRD link selection, media type arrays, and read-only collections.
+- README documentation for the JRD interface and an ActivityPub actor lookup
+  example.
 - An npm lockfile for reproducible dependency installation.
 - A code of conduct.
 
@@ -25,22 +31,32 @@ the tagged release commits.
   single media type or an array of accepted types. JRD instances are obtained
   through discovery; the class is not exported.
 - **Breaking:** Supported Node.js versions are now 22.x, 24.x, and 26.x.
+- **Breaking:** Converted the library and tests from CommonJS to ECMAScript
+  modules. `webfinger` is a named export.
+- Discovery now uses native `fetch()` and requests `application/jrd+json`,
+  with `application/json` as a lower-priority alternative.
 - Reserved example and invalid domains now follow normal HTTPS discovery
   instead of being rejected before a request is attempted.
 - Replaced Vows with the built-in Node.js test runner and native assertions.
-- Replaced Express test servers with Nock HTTP mocks and mocked DNS lookups.
-  Tests no longer require root privileges, listening ports, or TLS certificates.
+- Replaced Express test servers with Nock HTTP mocks. Tests call the real
+  `webfinger()` function without network access, root privileges, listening
+  ports, or TLS certificates.
+- Test resources and mocked endpoints now use `user1` and `foo.example`
+  instead of `alice` and `localhost`.
 - Updated project links and contact information for the Social Web Foundation.
 
-### Fixed
+### Removed
 
-- Corrected malformed XML in a test fixture.
+- **Breaking:** Removed host-meta/LRDD fallback and XRD conversion. Discovery
+  now uses the HTTPS WebFinger endpoint and JSON responses only.
+- **Breaking:** Removed the `lrdd()`, `hostmeta()`, `discover()`, and
+  `xrd2jrd()` exports. The `httpsOnly` and `webfingerOnly` options no longer
+  have an effect; the `options` argument is currently unused.
 
 ### Security
 
-- Upgraded xml2js from 0.1.14 to 0.6.2 to address CVE-2023-0842 (prototype
-  pollution). Updated XRD conversion for the current parser output and native
-  promise API while preserving the existing JRD output.
+- Removed the xml2js dependency along with XRD support, eliminating exposure
+  to its previously used version's CVE-2023-0842 (prototype pollution).
 
 ## [0.4.2] - 2013-07-17
 
