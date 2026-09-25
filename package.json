@@ -1,12 +1,16 @@
 {
     "name": "webfinger",
-    "description": "Client library for Host Meta (RFC 6415) and Webfinger",
+    "description": "Modern, zero-dependency WebFinger client (RFC 7033) for Node.js \u2014 promise-based JRD discovery for acct: URIs and URLs, built for ActivityPub",
     "homepage": "https://github.com/social-web-foundation/webfinger",
     "version": "0.4.2",
     "keywords": [
         "webfinger",
+        "rfc7033",
+        "jrd",
         "discovery",
-        "jrd"
+        "activitypub",
+        "fediverse",
+        "acct"
     ],
     "engines": {
         "node": "22.x || 24.x || 26.x"
