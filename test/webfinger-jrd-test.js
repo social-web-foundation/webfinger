@@ -21,6 +21,8 @@ describe('WebFinger JRD media type', function () {
 
     const result = await wf.webfinger(resource)
 
-    assert.deepEqual(result, document)
+    assert.equal(result.subject, document.subject)
+    assert.deepEqual(result.links, document.links)
+    assert.strictEqual(result.link('profile'), result.links[0])
   })
 })

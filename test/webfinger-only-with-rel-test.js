@@ -61,7 +61,7 @@ describe('WebFinger interface', function () {
 
       it('it has the links', function () {
         assert.ok(jrd !== null && typeof jrd === 'object' && !Array.isArray(jrd))
-        assert.ok(Object.hasOwn(jrd, 'links'))
+        assert.strictEqual(typeof jrd.link, 'function')
         assert.ok(Array.isArray(jrd.links))
         assert.strictEqual(jrd.links.length, 1)
         assert.ok(jrd.links[0] !== null && typeof jrd.links[0] === 'object' && !Array.isArray(jrd.links[0]))
@@ -85,7 +85,7 @@ describe('WebFinger interface', function () {
 
       it('it has the links', function () {
         assert.ok(jrd !== null && typeof jrd === 'object' && !Array.isArray(jrd))
-        assert.ok(Object.hasOwn(jrd, 'links'))
+        assert.strictEqual(typeof jrd.link, 'function')
         assert.ok(Array.isArray(jrd.links))
         assert.strictEqual(jrd.links.length, 1)
         assert.ok(jrd.links[0] !== null && typeof jrd.links[0] === 'object' && !Array.isArray(jrd.links[0]))
@@ -109,7 +109,7 @@ describe('WebFinger interface', function () {
 
       it('it has no links', function () {
         assert.ok(jrd !== null && typeof jrd === 'object' && !Array.isArray(jrd))
-        assert.ok(Object.hasOwn(jrd, 'links'))
+        assert.strictEqual(typeof jrd.link, 'function')
         assert.ok(Array.isArray(jrd.links))
         assert.strictEqual(jrd.links.length, 0)
       })

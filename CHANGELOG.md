@@ -19,6 +19,11 @@ the tagged release commits.
 
 - **Breaking:** `webfinger()` now returns promises instead of accepting callbacks. Errors reject
   the returned promise. Internal control flow uses async/await in place of Step.
+- **Breaking:** `webfinger()` now resolves to a `JRD` instance with getter-only
+  properties and frozen aliases, properties, links, and standard link metadata.
+  Its `link(rel, type?)` method selects the first matching link, accepting a
+  single media type or an array of accepted types. JRD instances are obtained
+  through discovery; the class is not exported.
 - **Breaking:** Supported Node.js versions are now 22.x, 24.x, and 26.x.
 - Reserved example and invalid domains now follow normal HTTPS discovery
   instead of being rejected before a request is attempted.

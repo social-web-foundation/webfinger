@@ -52,7 +52,7 @@ describe('WebFinger interface', function () {
       it('it has the links', function () {
         let profiles, avatars
         assert.ok(jrd !== null && typeof jrd === 'object' && !Array.isArray(jrd))
-        assert.ok(Object.hasOwn(jrd, 'links'))
+        assert.strictEqual(typeof jrd.link, 'function')
         assert.ok(Array.isArray(jrd.links))
         assert.strictEqual(jrd.links.length, 2)
 
