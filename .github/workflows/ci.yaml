@@ -27,3 +27,27 @@ jobs:
       - run: npm ci
       - run: npm run lint
       - run: npm test
+
+  publish-npm:
+    if: github.ref_type == 'tag' && startsWith(github.ref, 'refs/tags/v')
+    needs: [test]
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 26
+          registry-url: https://registry.npmjs.org
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Publish to NPM
+        run: npm publish --access public --provenance
