@@ -8,10 +8,13 @@ the tagged release commits.
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-09-25
+
 ### Added
 
 - GitHub Actions CI running lint and tests on Node.js 22, 24, and 26 for branch
-  pushes and version tags matching `vX.Y.Z`.
+  pushes and version tags matching `vX.Y.Z`, with npm publishing via OIDC
+  trusted publisher and provenance on version tags.
 - StandardJS formatting and an `npm run lint` task.
 - Dependabot weekly checks for npm and GitHub Actions, each with a seven-day
   cooldown.
@@ -146,7 +149,8 @@ the tagged release commits.
 - A `discover()` helper that selects host-meta or WebFinger discovery based on
   the supplied address.
 
-[Unreleased]: https://github.com/social-web-foundation/webfinger/compare/v0.4.2...HEAD
+[Unreleased]: https://github.com/social-web-foundation/webfinger/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/social-web-foundation/webfinger/compare/v0.4.2...v0.5.0
 [0.4.2]: https://github.com/social-web-foundation/webfinger/compare/v0.4.1...v0.4.2
 [0.4.1]: https://github.com/social-web-foundation/webfinger/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/social-web-foundation/webfinger/compare/v0.3.2...v0.4.0
