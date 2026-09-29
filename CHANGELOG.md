@@ -8,12 +8,16 @@ the tagged release commits.
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-09-29
+
 ### Added
 
 - `options.fetch` for an injectable discovery transport, defaulting to global
   `fetch` when the property is absent.
 - Tests for custom fetch usage, relation options, and omission of empty
   relation filters.
+- README Security section explaining that SSRF protection requires a custom
+  fetch transport, with a `guarded-fetch` integration example.
 
 ### Changed
 
@@ -22,6 +26,8 @@ the tagged release commits.
   in the same options object. Relation strings and arrays remain supported.
   Omit `rel` or pass `undefined`, `null`, an empty string, or an empty array
   to send no relation filter.
+- Reorganized the README to follow Standard Readme section ordering, with
+  installation, usage, and contribution guidance.
 
 ## [0.5.1] - 2026-09-25
 
@@ -171,7 +177,8 @@ the tagged release commits.
 - A `discover()` helper that selects host-meta or WebFinger discovery based on
   the supplied address.
 
-[Unreleased]: https://github.com/social-web-foundation/webfinger/compare/v0.5.1...HEAD
+[Unreleased]: https://github.com/social-web-foundation/webfinger/compare/v0.6.0...HEAD
+[0.6.0]: https://github.com/social-web-foundation/webfinger/compare/v0.5.1...v0.6.0
 [0.5.1]: https://github.com/social-web-foundation/webfinger/compare/v0.5.0...v0.5.1
 [0.5.0]: https://github.com/social-web-foundation/webfinger/compare/v0.4.2...v0.5.0
 [0.4.2]: https://github.com/social-web-foundation/webfinger/compare/v0.4.1...v0.4.2
