@@ -49,8 +49,25 @@ or filter its `links` array to select the links you need.
 
 ### webfinger(address, rel, options)
 
-The third argument is accepted but currently unused. The former `httpsOnly`
-and `webfingerOnly` options have no effect.
+Use `options.fetch` to supply a custom fetch function for the discovery
+request. When the `fetch` property is absent, the module uses global `fetch`.
+Pass `null` as `rel` if you want to supply options without filtering by relation.
+
+The function receives the discovery URL and a request-options object containing
+the `Accept` header. It should return a promise for a fetch-compatible response
+with a numeric `status` and an asynchronous `json()` method. The response must
+have status 200; its JSON is parsed into the returned `JRD`.
+
+```js
+const jrd = await webfinger('user1@foo.example', null, { fetch: customFetch })
+```
+
+Supply a callable function. Explicit values such as `undefined` or `null` do
+not select the default and cause the lookup to reject. If you pass an object
+method that depends on `this`, bind it to its instance first. Errors from the
+custom fetch function reject the lookup promise.
+
+The former `httpsOnly` and `webfingerOnly` options have no effect.
 
 ### JRD
 
