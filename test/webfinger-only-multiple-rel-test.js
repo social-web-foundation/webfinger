@@ -42,7 +42,7 @@ describe('WebFinger interface', function () {
       let jrd
 
       before(async function () {
-        jrd = await wf.webfinger('user1@foo.example', ['profile', 'avatar'])
+        jrd = await wf.webfinger('user1@foo.example', { rel: ['profile', 'avatar'] })
       }, { timeout: 10000 })
 
       it('it works', function () {

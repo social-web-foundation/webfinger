@@ -8,6 +8,21 @@ the tagged release commits.
 
 ## [Unreleased]
 
+### Added
+
+- `options.fetch` for an injectable discovery transport, defaulting to global
+  `fetch` when the property is absent.
+- Tests for custom fetch usage, relation options, and omission of empty
+  relation filters.
+
+### Changed
+
+- **Breaking:** Discovery now uses `webfinger(address, options)`. Move the
+  positional relation argument into `options.rel`; pass `rel` and `fetch`
+  in the same options object. Relation strings and arrays remain supported.
+  Omit `rel` or pass `undefined`, `null`, an empty string, or an empty array
+  to send no relation filter.
+
 ## [0.5.1] - 2026-09-25
 
 ### Changed

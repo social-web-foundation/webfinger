@@ -38,7 +38,7 @@ describe('JRD interface returned by webfinger()', function () {
       .query({ resource: 'acct:user1@foo.example', rel: 'self' })
       .reply(200, document, { 'Content-Type': 'application/jrd+json' })
 
-    jrd = await webfinger('user1@foo.example', 'self')
+    jrd = await webfinger('user1@foo.example', { rel: 'self' })
   })
 
   it('exposes the subject, aliases, properties, and complete links', function () {

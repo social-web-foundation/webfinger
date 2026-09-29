@@ -52,7 +52,7 @@ describe('WebFinger interface', function () {
       let jrd
 
       before(async function () {
-        jrd = await wf.webfinger('user1@foo.example', 'profile')
+        jrd = await wf.webfinger('user1@foo.example', { rel: 'profile' })
       }, { timeout: 10000 })
 
       it('it works', function () {
@@ -76,7 +76,7 @@ describe('WebFinger interface', function () {
       let jrd
 
       before(async function () {
-        jrd = await wf.webfinger('user1@foo.example', 'avatar')
+        jrd = await wf.webfinger('user1@foo.example', { rel: 'avatar' })
       }, { timeout: 10000 })
 
       it('it works', function () {
@@ -100,7 +100,7 @@ describe('WebFinger interface', function () {
       let jrd
 
       before(async function () {
-        jrd = await wf.webfinger('user1@foo.example', 'http://web.example/unrecognized')
+        jrd = await wf.webfinger('user1@foo.example', { rel: 'http://web.example/unrecognized' })
       }, { timeout: 10000 })
 
       it('it works', function () {
