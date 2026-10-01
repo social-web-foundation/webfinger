@@ -137,21 +137,33 @@ for direct construction.
 The class provides synchronous access to the document and its links. Reading
 its properties or selecting a link does not make a network request.
 
+In general, malformed or mistyped response properties are ignored and filtered
+out. Missing or invalid top-level fields retain their defaults: `subject` is
+`undefined`, `aliases` and `links` are empty arrays, and `properties` is an empty
+object. A JSON response of `null` or another non-object value, including an
+array, produces an empty JRD.
+
+Link `titles` and `properties` must be non-null, non-array objects. Invalid
+values are omitted, so reading those fields returns `undefined`; the rest of
+the link remains available. This handling applies to parsed response data.
+Network errors, non-200 responses, and invalid JSON syntax still reject the
+lookup promise.
+
 #### Properties
 
 All four properties are getter-only:
 
 - `subject`: the subject identifier from the document, or `undefined` when
-  absent.
+  absent or mistyped.
 - `aliases`: a frozen array of alternative identifiers, defaulting to an empty
-  array when absent. Access an individual alias with `jrd.aliases[i]`.
+  array when absent or mistyped. Access an individual alias with `jrd.aliases[i]`.
 - `properties`: a frozen object mapping property URI keys to string or `null`
-  values, defaulting to an empty object when absent. Explicit `null` values
-  are preserved.
+  values, defaulting to an empty object when the field is absent or mistyped.
+  Explicit `null` values within a valid properties object are preserved.
 - `links`: a frozen array of link objects in document order, defaulting to an
-  empty array when absent. Each link object and its `titles` and `properties`
-  objects, when present, are also frozen. Links retain the fields supplied by
-  the server.
+  empty array when absent or mistyped. Each link object and its `titles` and `properties`
+  objects, when present and valid, are also frozen. Links retain server-supplied
+  fields except metadata filtered out by validation.
 
 The collections and standard link metadata are read-only. Attempting to
 change frozen contents or assign to these getter-only properties throws a

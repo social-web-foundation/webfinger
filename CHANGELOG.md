@@ -8,6 +8,17 @@ the tagged release commits.
 
 ## [Unreleased]
 
+### Added
+
+- README documentation for ignored malformed fields, empty JRD defaults, and
+  filtering of invalid link metadata.
+
+- Tests requiring invalid link `titles` and `properties` values to be undefined
+  while preserving usable links and valid metadata.
+
+- JRD response tests for JSON `null`, missing links, and `links` values of
+  `null`, `"scalar"`, and `{ object: true }`, alongside existing empty-links coverage.
+
 ## [0.6.0] - 2026-09-29
 
 ### Added
