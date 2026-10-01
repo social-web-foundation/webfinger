@@ -8,16 +8,22 @@ the tagged release commits.
 
 ## [Unreleased]
 
+## [0.6.1] - 2026-10-01
+
+### Fixed
+
+- Initialize empty JRD defaults for JSON `null` and other invalid top-level
+  values so link selection remains usable.
+- Ignore mistyped JRD fields, preserving their default values.
+- Filter out invalid link `titles` and `properties` values while preserving
+  usable links and valid metadata.
+
 ### Added
 
+- Regression tests for JSON `null`, missing links, malformed `links` values,
+  and invalid link metadata.
 - README documentation for ignored malformed fields, empty JRD defaults, and
   filtering of invalid link metadata.
-
-- Tests requiring invalid link `titles` and `properties` values to be undefined
-  while preserving usable links and valid metadata.
-
-- JRD response tests for JSON `null`, missing links, and `links` values of
-  `null`, `"scalar"`, and `{ object: true }`, alongside existing empty-links coverage.
 
 ## [0.6.0] - 2026-09-29
 
@@ -188,7 +194,8 @@ the tagged release commits.
 - A `discover()` helper that selects host-meta or WebFinger discovery based on
   the supplied address.
 
-[Unreleased]: https://github.com/social-web-foundation/webfinger/compare/v0.6.0...HEAD
+[Unreleased]: https://github.com/social-web-foundation/webfinger/compare/v0.6.1...HEAD
+[0.6.1]: https://github.com/social-web-foundation/webfinger/compare/v0.6.0...v0.6.1
 [0.6.0]: https://github.com/social-web-foundation/webfinger/compare/v0.5.1...v0.6.0
 [0.5.1]: https://github.com/social-web-foundation/webfinger/compare/v0.5.0...v0.5.1
 [0.5.0]: https://github.com/social-web-foundation/webfinger/compare/v0.4.2...v0.5.0
