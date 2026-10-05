@@ -1,6 +1,6 @@
 # Webfinger
 
-Webfinger client library for Node.js.
+Webfinger client library for Node.js and browsers.
 
 It supports RFC 7033.
 
@@ -9,6 +9,7 @@ It supports RFC 7033.
 - [Security](#security)
 - [Install](#install)
 - [Usage](#usage)
+  - [Browser usage](#browser-usage)
 - [API](#api)
 - [Contributing](#contributing)
   - [Testing](#testing)
@@ -27,7 +28,8 @@ to supply an SSRF-protecting fetch implementation.
 
 ## Install
 
-Requires Node.js 22.x, 24.x, or 26.x.
+For Node.js usage, requires Node.js 22.x, 24.x, or 26.x.
+For browser requirements and loading instructions, see [Browser usage](#browser-usage).
 
 ```sh
 npm install webfinger
@@ -47,6 +49,38 @@ console.log(jrd.links)
 
 See [API](#api) for relation filtering, custom fetch functions, and JRD link
 selection. For user-supplied addresses, review [Security](#security).
+
+### Browser usage
+
+The library uses native ES modules and the same promise-based `webfinger()` API
+in browsers. With a bundler, use the package import shown above. To load it
+directly from npm through [jsDelivr](https://www.jsdelivr.com/), use a
+version-pinned URL in a module script:
+
+```html
+<script type="module">
+  import { webfinger } from 'https://cdn.jsdelivr.net/npm/webfinger@0.7.0/lib/webfinger.js'
+
+  const jrd = await webfinger('user@example.com')
+  console.log(jrd.subject)
+  console.log(jrd.links)
+</script>
+```
+
+This example targets the 0.7.0 release and requires that version to be published
+to npm. Replace `user@example.com` with an account whose WebFinger endpoint
+allows requests from your site's origin. A bare `webfinger` import needs a
+bundler or an import map to resolve in a browser.
+
+Browsers must support ES modules, private class fields, `fetch`, and
+`URLSearchParams`. Discovery for HTTP and HTTPS resource URLs also requires
+`URL.parse()`. Browser tests currently run in Chromium; Firefox and Safari
+have not been verified.
+
+For cross-origin discovery, the remote WebFinger endpoint must return CORS
+headers allowing your site's origin, such as `Access-Control-Allow-Origin`.
+Without that permission, browser `fetch` cannot read the response and discovery
+rejects. Supplying `options.fetch` does not bypass browser CORS restrictions.
 
 ## API
 
