@@ -8,8 +8,11 @@ the tagged release commits.
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-10-04
+
 ### Added
 
+- Browser support through native ES modules and browser APIs, verified in Chromium.
 - Chromium browser tests for native module imports, discovery, query serialization,
   and JRD link selection, with a separate CI job required before publishing.
 
@@ -204,7 +207,8 @@ the tagged release commits.
 - A `discover()` helper that selects host-meta or WebFinger discovery based on
   the supplied address.
 
-[Unreleased]: https://github.com/social-web-foundation/webfinger/compare/v0.6.1...HEAD
+[Unreleased]: https://github.com/social-web-foundation/webfinger/compare/v0.7.0...HEAD
+[0.7.0]: https://github.com/social-web-foundation/webfinger/compare/v0.6.1...v0.7.0
 [0.6.1]: https://github.com/social-web-foundation/webfinger/compare/v0.6.0...v0.6.1
 [0.6.0]: https://github.com/social-web-foundation/webfinger/compare/v0.5.1...v0.6.0
 [0.5.1]: https://github.com/social-web-foundation/webfinger/compare/v0.5.0...v0.5.1
