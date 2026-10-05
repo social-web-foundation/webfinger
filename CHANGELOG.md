@@ -8,6 +8,11 @@ the tagged release commits.
 
 ## [Unreleased]
 
+### Changed
+
+- Replace `node:querystring` with the Node.js and browser-native `URLSearchParams`
+  for query serialization, preserving repeated `rel` parameters.
+
 ## [0.6.1] - 2026-10-01
 
 ### Fixed
