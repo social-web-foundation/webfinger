@@ -8,6 +8,11 @@ the tagged release commits.
 
 ## [Unreleased]
 
+### Added
+
+- Chromium browser tests for native module imports, discovery, query serialization,
+  and JRD link selection, with a separate CI job required before publishing.
+
 ### Changed
 
 - Replace `node:querystring` with the Node.js and browser-native `URLSearchParams`

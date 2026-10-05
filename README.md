@@ -224,6 +224,19 @@ npm run lint
 npm test
 ```
 
+Run the browser tests in headless Chromium with Playwright:
+
+```sh
+npx playwright install chromium
+npm run test:browser
+```
+
+The browser tests import the library as a native ES module and exercise browser
+`fetch` with intercepted responses, including cross-origin discovery with CORS
+headers and repeated relation parameters. Installing Chromium requires network
+access; the tests themselves do not contact external services. CI runs both
+the Node.js and browser suites before publishing.
+
 ## License
 
 - Copyright 2012,2013 E14N <https://e14n.com/>
