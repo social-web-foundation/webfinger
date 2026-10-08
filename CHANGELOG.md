@@ -1,5 +1,7 @@
 # Changelog
 
+<!-- markdownlint-configure-file { "MD024": { "siblings_only": true } } -->
+
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
@@ -7,6 +9,12 @@ Historical entries were reconstructed from Git history; dates are taken from
 the tagged release commits.
 
 ## [Unreleased]
+
+### Added
+
+- `toAcctUri()` to convert unescaped account addresses to `acct:` URIs with
+  percent-encoded local parts and IDNA ASCII domains; `webfinger()` uses this
+  conversion for bare addresses while preserving existing `acct:` URIs.
 
 ## [0.7.0] - 2026-10-04
 

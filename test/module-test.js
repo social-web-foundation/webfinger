@@ -35,5 +35,9 @@ describe('Webfinger module interface', function () {
     it('it has the webfinger() export', function () {
       assert.strictEqual(typeof mod.webfinger, 'function')
     })
+
+    it('it has the toAcctUri() export', function () {
+      assert.strictEqual(typeof mod.toAcctUri, 'function')
+    })
   })
 })

@@ -11,6 +11,7 @@ It supports RFC 7033.
 - [Usage](#usage)
   - [Browser usage](#browser-usage)
 - [API](#api)
+  - [toAcctUri(address)](#toaccturiaddress)
 - [Contributing](#contributing)
   - [Testing](#testing)
 - [License](#license)
@@ -72,9 +73,8 @@ to npm. Replace `user@example.com` with an account whose WebFinger endpoint
 allows requests from your site's origin. A bare `webfinger` import needs a
 bundler or an import map to resolve in a browser.
 
-Browsers must support ES modules, private class fields, `fetch`, and
-`URLSearchParams`. Discovery for HTTP and HTTPS resource URLs also requires
-`URL.parse()`. Browser tests currently run in Chromium; Firefox and Safari
+Browsers must support ES modules, private class fields, `fetch`, `URL`, and
+`URLSearchParams`. Browser tests currently run in Chromium; Firefox and Safari
 have not been verified.
 
 For cross-origin discovery, the remote WebFinger endpoint must return CORS
@@ -87,13 +87,57 @@ rejects. Supplying `options.fetch` does not bypass browser CORS restrictions.
 The `webfinger()` function returns a promise. Await the result; errors reject the promise.
 This replaces the previous callback API.
 
+### toAcctUri(address)
+
+The named `toAcctUri` export synchronously converts an unescaped account address
+to an `acct:` URI string without making a network request. It works in Node.js
+and browsers.
+
+The input must contain a nonempty username and hostname separated by `@`.
+The last `@` is the separator; earlier `@` characters belong to the username.
+The username is UTF-8 percent-encoded using `encodeURIComponent()`, and the
+hostname is converted to IDNA ASCII using the `URL` API.
+
+| Input | Returned URI |
+| --- | --- |
+| `user1@foo.example` | `acct:user1@foo.example` |
+| `josé@bücher.example` | `acct:jos%C3%A9@xn--bcher-kva.example` |
+| `some@name@foo.example` | `acct:some%40name@foo.example` |
+| `acct:user1@foo.example` | `acct:acct%3Auser1@foo.example` |
+| `https://foo.example/user@bar.example` | `acct:https%3A%2F%2Ffoo.example%2Fuser@bar.example` |
+
+All username text is treated literally, including URI prefixes and existing
+percent escapes. For example, `user%40name@foo.example` becomes
+`acct:user%2540name@foo.example`. Supply unescaped input; this function does
+not preserve or decode an existing `acct:` URI.
+
+Empty strings, `null`, and other non-string inputs throw a `TypeError`.
+Missing separators, usernames, or hostnames throw an `Error`. Invalid hostnames
+that cannot be parsed by the `URL` constructor throw a `TypeError`.
+
 ### webfinger(address)
 
 Resolves to a `JRD` instance containing discovery data for `address`.
 
 The `address` argument accepts an `acct:` URI, a bare account identifier such
 as `user1@foo.example`, or a URL with a hostname, such as an `http:` or `https:`
-URL. Bare account identifiers are prefixed with `acct:` before discovery.
+URL.
+
+Bare addresses with no URI scheme are converted using `toAcctUri()` before
+discovery: their local parts are percent-encoded and their domains converted to
+IDNA ASCII. For example, `josé@bücher.example` is looked up as
+`acct:jos%C3%A9@xn--bcher-kva.example`.
+
+Inputs with an `acct:` scheme are expected to be already encoded and are sent
+unchanged as the resource identifier. Existing percent escapes are preserved.
+Use `toAcctUri()` explicitly when the username contains text resembling a URI
+scheme, such as `acct:` or `https:`, because `webfinger()` interprets a leading
+scheme as a URI rather than a bare address.
+
+The resource identifier is separately encoded for transport in the query string.
+For example, a `%` in an encoded `acct:` local part is sent as `%25`, so decoding
+the query yields the original encoded identifier. Empty strings, `null`, and
+other non-string inputs reject the promise with a `TypeError`.
 
 Discovery requests `https://<hostname>/.well-known/webfinger` with the resource
 in the query string. The response must have status 200 and contain JSON.

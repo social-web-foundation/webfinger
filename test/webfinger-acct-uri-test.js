@@ -26,6 +26,97 @@ import { useNock } from './helpers/nock.js'
 describe('WebFinger interface', function () {
   useNock()
 
+  for (const { name, resource, encodedResource, origin } of [
+    {
+      name: 'a non-ASCII local part',
+      resource: 'josé@foo.example',
+      encodedResource: 'acct:jos%C3%A9@foo.example',
+      origin: 'https://foo.example'
+    },
+    {
+      name: 'a non-ASCII domain',
+      resource: 'user1@bücher.example',
+      encodedResource: 'acct:user1@xn--bcher-kva.example',
+      origin: 'https://xn--bcher-kva.example'
+    },
+    {
+      name: 'a non-ASCII local part and domain',
+      resource: 'josé@bücher.example',
+      encodedResource: 'acct:jos%C3%A9@xn--bcher-kva.example',
+      origin: 'https://xn--bcher-kva.example'
+    }
+  ]) {
+    it(`encodes and looks up a bare account address with ${name}`, async function () {
+      const link = { rel: 'profile', href: `${origin}/profile/user1` }
+      const scope = nock(origin)
+        .get('/.well-known/webfinger')
+        .query({ resource: encodedResource })
+        .reply(200, { subject: encodedResource, links: [link] })
+
+      const jrd = await wf.webfinger(resource)
+
+      assert.ok(scope.isDone(), 'The expected WebFinger endpoint was requested')
+      assert.strictEqual(jrd.subject, encodedResource)
+      assert.deepStrictEqual(jrd.link('profile'), link)
+    })
+  }
+
+  it('uses the last @ as the hostname separator in a bare account address', async function () {
+    const resource = 'something@something@foo.example'
+    const encodedResource = 'acct:something%40something@foo.example'
+    const scope = nock('https://foo.example')
+      .get('/.well-known/webfinger')
+      .query({ resource: encodedResource })
+      .reply(200, { subject: encodedResource, links: [] })
+
+    const jrd = await wf.webfinger(resource)
+
+    assert.ok(scope.isDone(), 'The local-part @ was encoded and the correct hostname was requested')
+    assert.strictEqual(jrd.subject, encodedResource)
+  })
+
+  for (const { name, resource, origin } of [
+    {
+      name: 'a percent-encoded local part',
+      resource: 'acct:jos%C3%A9@foo.example',
+      origin: 'https://foo.example'
+    },
+    {
+      name: 'an IDNA-encoded domain',
+      resource: 'acct:user1@xn--bcher-kva.example',
+      origin: 'https://xn--bcher-kva.example'
+    },
+    {
+      name: 'a percent-encoded local part and IDNA-encoded domain',
+      resource: 'acct:jos%C3%A9@xn--bcher-kva.example',
+      origin: 'https://xn--bcher-kva.example'
+    },
+    {
+      name: 'an escaped @ and percent sign',
+      resource: 'acct:some%40name%25@foo.example',
+      origin: 'https://foo.example'
+    },
+    {
+      name: 'lowercase percent escapes',
+      resource: 'acct:jos%c3%a9@foo.example',
+      origin: 'https://foo.example'
+    }
+  ]) {
+    it(`preserves an acct: URI with ${name}`, async function () {
+      const link = { rel: 'profile', href: `${origin}/profile/user1` }
+      const scope = nock(origin)
+        .get('/.well-known/webfinger')
+        .query({ resource })
+        .reply(200, { subject: resource, links: [link] })
+
+      const jrd = await wf.webfinger(resource)
+
+      assert.ok(scope.isDone(), 'The original acct: URI was sent as the resource')
+      assert.strictEqual(jrd.subject, resource)
+      assert.deepStrictEqual(jrd.link('profile'), link)
+    })
+  }
+
   describe('When an HTTPS service just supports Webfinger', function () {
     before(function () {
       nock('https://foo.example')
