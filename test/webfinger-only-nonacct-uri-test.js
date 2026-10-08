@@ -26,6 +26,45 @@ import { useNock } from './helpers/nock.js'
 describe('WebFinger interface', function () {
   useNock()
 
+  for (const protocol of ['http', 'https']) {
+    for (const { name, input, encoded, hostname } of [
+      {
+        name: 'a non-ASCII path',
+        input: 'foo.example/profile/josé',
+        encoded: 'foo.example/profile/jos%C3%A9',
+        hostname: 'foo.example'
+      },
+      {
+        name: 'a non-ASCII domain',
+        input: 'bücher.example/profile/user1',
+        encoded: 'xn--bcher-kva.example/profile/user1',
+        hostname: 'xn--bcher-kva.example'
+      },
+      {
+        name: 'a non-ASCII path and domain',
+        input: 'bücher.example/profile/josé',
+        encoded: 'xn--bcher-kva.example/profile/jos%C3%A9',
+        hostname: 'xn--bcher-kva.example'
+      }
+    ]) {
+      it(`looks up a ${protocol}: URI with ${name} as an encoded resource`, async function () {
+        const resource = `${protocol}://${input}`
+        const encodedResource = `${protocol}://${encoded}`
+        const link = { rel: 'feed', href: `${encodedResource}/feed` }
+        const scope = nock(`https://${hostname}`)
+          .get('/.well-known/webfinger')
+          .query({ resource: encodedResource })
+          .reply(200, { subject: encodedResource, links: [link] })
+
+        const jrd = await wf.webfinger(resource)
+
+        assert.ok(scope.isDone(), 'The encoded resource was requested at the HTTPS endpoint')
+        assert.strictEqual(jrd.subject, encodedResource)
+        assert.deepStrictEqual(jrd.link('feed'), link)
+      })
+    }
+  }
+
   describe('When an HTTPS service just supports Webfinger', function () {
     before(function () {
       nock('https://foo.example')

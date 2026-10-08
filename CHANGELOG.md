@@ -13,8 +13,16 @@ the tagged release commits.
 ### Added
 
 - `toAcctUri()` to convert unescaped account addresses to `acct:` URIs with
-  percent-encoded local parts and IDNA ASCII domains; `webfinger()` uses this
-  conversion for bare addresses while preserving existing `acct:` URIs.
+  percent-encoded local parts and IDNA ASCII domains.
+- `options.encode` to control resource identifier encoding, enabled by default.
+- Lookup support for HTTP and HTTPS resources with Unicode paths and domains.
+
+### Changed
+
+- **Breaking:** `webfinger()` now encodes bare addresses and `acct:` URI local
+  parts and domains by default, and serializes other URI inputs using the URL
+  API. Pass `encode: false` to preserve already encoded resource identifiers;
+  bare addresses are rejected when encoding is disabled.
 
 ## [0.7.0] - 2026-10-04
 

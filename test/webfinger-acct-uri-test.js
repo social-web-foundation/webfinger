@@ -102,14 +102,14 @@ describe('WebFinger interface', function () {
       origin: 'https://foo.example'
     }
   ]) {
-    it(`preserves an acct: URI with ${name}`, async function () {
+    it(`preserves an acct: URI with ${name} when encode is false`, async function () {
       const link = { rel: 'profile', href: `${origin}/profile/user1` }
       const scope = nock(origin)
         .get('/.well-known/webfinger')
         .query({ resource })
         .reply(200, { subject: resource, links: [link] })
 
-      const jrd = await wf.webfinger(resource)
+      const jrd = await wf.webfinger(resource, { encode: false })
 
       assert.ok(scope.isDone(), 'The original acct: URI was sent as the resource')
       assert.strictEqual(jrd.subject, resource)

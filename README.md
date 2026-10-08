@@ -123,16 +123,12 @@ The `address` argument accepts an `acct:` URI, a bare account identifier such
 as `user1@foo.example`, or a URL with a hostname, such as an `http:` or `https:`
 URL.
 
-Bare addresses with no URI scheme are converted using `toAcctUri()` before
-discovery: their local parts are percent-encoded and their domains converted to
-IDNA ASCII. For example, `josé@bücher.example` is looked up as
-`acct:jos%C3%A9@xn--bcher-kva.example`.
-
-Inputs with an `acct:` scheme are expected to be already encoded and are sent
-unchanged as the resource identifier. Existing percent escapes are preserved.
-Use `toAcctUri()` explicitly when the username contains text resembling a URI
-scheme, such as `acct:` or `https:`, because `webfinger()` interprets a leading
-scheme as a URI rather than a bare address.
+By default, bare addresses and URI inputs are encoded before discovery.
+Both `josé@bücher.example` and `acct:josé@bücher.example` are looked up as
+`acct:jos%C3%A9@xn--bcher-kva.example`. Unicode URLs are serialized with
+percent-encoded paths and IDNA ASCII domains. To preserve an already encoded
+URI, pass `options.encode: false`; bare addresses are rejected in that mode.
+See [options.encode](#optionsencode) for details.
 
 The resource identifier is separately encoded for transport in the query string.
 For example, a `%` in an encoded `acct:` local part is sent as `%25`, so decoding
@@ -145,10 +141,48 @@ XRD conversion and host-meta/LRDD fallback are not supported.
 
 ### webfinger(address, options)
 
-The optional second argument is an object with `rel` and `fetch` properties.
+The optional second argument is an object with `encode`, `rel`, and `fetch`
+properties.
 The previous positional `rel` argument and three-argument signature are no
 longer supported. Move the relation into `options.rel` and pass any custom
 fetch function in the same object.
+
+#### options.encode
+
+Controls encoding of the resource identifier. Defaults to `true` when the
+property is absent.
+
+With `encode: true`:
+
+- Bare addresses with no URI scheme are converted using `toAcctUri()`.
+- For `acct:` inputs, the prefix is retained, the local part is percent-encoded,
+  and the domain is converted to IDNA ASCII. Local-part text is treated
+  literally: existing `%` escapes are encoded again.
+- Other URI inputs are parsed and serialized using the `URL` API. For HTTP and
+  HTTPS URLs, Unicode domains become IDNA ASCII and Unicode paths become UTF-8
+  percent escapes. Existing path escapes are preserved. Serialization also
+  applies normal URL normalization, such as lowercasing the hostname.
+
+| Input with encoding enabled | Resource identifier |
+| --- | --- |
+| `josé@bücher.example` | `acct:jos%C3%A9@xn--bcher-kva.example` |
+| `acct:josé@bücher.example` | `acct:jos%C3%A9@xn--bcher-kva.example` |
+| `acct:jos%C3%A9@foo.example` | `acct:jos%25C3%25A9@foo.example` |
+| `http://bücher.example/profile/josé` | `http://xn--bcher-kva.example/profile/jos%C3%A9` |
+
+With `encode: false`, the input must be a URI. Its resource identifier is
+preserved exactly, including percent escapes; bare addresses reject the promise.
+Use this option for already encoded `acct:` URIs, or whenever you need to retain
+the original URI spelling.
+
+In both modes, the identifier is encoded separately for query transport, and
+discovery uses HTTPS regardless of the resource's scheme. The native `fetch`
+transport handles IDNA conversion of the request hostname independently of this
+option.
+
+If a bare username begins with scheme-like text such as `acct:` or `https:`,
+convert the complete address with `toAcctUri()` first, then pass the resulting
+URI to `webfinger()` with `encode: false` to avoid encoding its local part again.
 
 #### options.rel
 
