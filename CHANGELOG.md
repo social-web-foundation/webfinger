@@ -10,6 +10,8 @@ the tagged release commits.
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-10-08
+
 ### Added
 
 - `toAcctUri()` to convert unescaped account addresses to `acct:` URIs with
@@ -223,7 +225,8 @@ the tagged release commits.
 - A `discover()` helper that selects host-meta or WebFinger discovery based on
   the supplied address.
 
-[Unreleased]: https://github.com/social-web-foundation/webfinger/compare/v0.7.0...HEAD
+[Unreleased]: https://github.com/social-web-foundation/webfinger/compare/v0.8.0...HEAD
+[0.8.0]: https://github.com/social-web-foundation/webfinger/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/social-web-foundation/webfinger/compare/v0.6.1...v0.7.0
 [0.6.1]: https://github.com/social-web-foundation/webfinger/compare/v0.6.0...v0.6.1
 [0.6.0]: https://github.com/social-web-foundation/webfinger/compare/v0.5.1...v0.6.0
