@@ -10,6 +10,17 @@ the tagged release commits.
 
 ## [Unreleased]
 
+### Added
+
+- `fromAcctUri()` to convert `acct:` URIs to readable account addresses with
+  decoded usernames and Unicode domains. Inputs without the `acct:` prefix
+  are rejected.
+
+### Changed
+
+- Add `punycode` as a runtime dependency for Unicode domain decoding.
+- Update README dependency and browser loading guidance.
+
 ## [0.8.0] - 2026-10-08
 
 ### Added

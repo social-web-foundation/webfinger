@@ -8,6 +8,7 @@ It supports RFC 7033.
 
 - [Security](#security)
 - [Install](#install)
+- [Dependencies](#dependencies)
 - [Usage](#usage)
   - [Browser usage](#browser-usage)
 - [API](#api)
@@ -36,6 +37,12 @@ For browser requirements and loading instructions, see [Browser usage](#browser-
 npm install webfinger
 ```
 
+## Dependencies
+
+Unicode hostname decoding uses the browser-compatible `punycode` package's
+ES module entry point. The library is therefore not dependency-free. Account
+URI conversion is local and does not require a network lookup.
+
 ## Usage
 
 Import the named `webfinger` export and await discovery:
@@ -55,12 +62,12 @@ selection. For user-supplied addresses, review [Security](#security).
 
 The library uses native ES modules and the same promise-based `webfinger()` API
 in browsers. With a bundler, use the package import shown above. To load it
-directly from npm through [jsDelivr](https://www.jsdelivr.com/), use a
-version-pinned URL in a module script:
+through [jsDelivr](https://www.jsdelivr.com/), use its ESM transformation
+endpoint with a pinned version so dependency imports are resolved:
 
 ```html
 <script type="module">
-  import { webfinger } from 'https://cdn.jsdelivr.net/npm/webfinger@0.7.0/lib/webfinger.js'
+  import { webfinger } from 'https://cdn.jsdelivr.net/npm/webfinger@0.8.0/+esm'
 
   const jrd = await webfinger('user@example.com')
   console.log(jrd.subject)
@@ -68,10 +75,10 @@ version-pinned URL in a module script:
 </script>
 ```
 
-This example targets the 0.7.0 release and requires that version to be published
-to npm. Replace `user@example.com` with an account whose WebFinger endpoint
-allows requests from your site's origin. A bare `webfinger` import needs a
-bundler or an import map to resolve in a browser.
+Replace `user@example.com` with an account whose WebFinger endpoint allows
+requests from your site's origin. When serving the package's source files
+directly instead, provide an import map for bare package imports, including
+`punycode/punycode.es6.js`, or bundle the modules first.
 
 Browsers must support ES modules, private class fields, `fetch`, `URL`, and
 `URLSearchParams`. Browser tests currently run in Chromium; Firefox and Safari
