@@ -27,6 +27,7 @@
         "lib": "./lib/"
     },
     "devDependencies": {
+        "esbuild": "^0.28.2",
         "nock": "^15.0.1",
         "playwright": "^1.64.0",
         "standard": "^17.1.2"

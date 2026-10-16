@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
-import { readFile } from 'node:fs/promises'
+import { fileURLToPath } from 'node:url'
 import { before, after, describe, it } from 'node:test'
+import { build } from 'esbuild'
 import { chromium } from 'playwright'
 
 describe('WebFinger in Chromium', { timeout: 30000 }, function () {
@@ -8,7 +9,14 @@ describe('WebFinger in Chromium', { timeout: 30000 }, function () {
   let source
 
   before(async function () {
-    source = await readFile(new URL('../../lib/webfinger.js', import.meta.url), 'utf8')
+    const bundle = await build({
+      entryPoints: [fileURLToPath(new URL('../../lib/webfinger.js', import.meta.url))],
+      bundle: true,
+      platform: 'browser',
+      format: 'esm',
+      write: false
+    })
+    source = bundle.outputFiles[0].text
     browser = await chromium.launch()
   })
 
@@ -54,9 +62,10 @@ describe('WebFinger in Chromium', { timeout: 30000 }, function () {
 
       await page.goto('https://client.example/')
       const result = await page.evaluate(async ({ address, options }) => {
-        const { webfinger } = await import('https://client.example/webfinger.js')
+        const { webfinger, fromAcctUri } = await import('https://client.example/webfinger.js')
         const jrd = await webfinger(address, options)
         return {
+          readable: fromAcctUri('acct:%C3%A9lise@xn--r8jz45g.example'),
           subject: jrd.subject,
           link: jrd.link('self', 'application/activity+json'),
           frozen: Object.isFrozen(jrd.links) && Object.isFrozen(jrd.links[0])
@@ -70,7 +79,7 @@ describe('WebFinger in Chromium', { timeout: 30000 }, function () {
       assert.deepEqual(query.getAll('rel'), rels)
       assert.equal(requests[0].method, 'GET')
       assert.ok(requests[0].accept.includes('application/jrd+json'))
-      assert.deepEqual(result, { subject: resource, link, frozen: true })
+      assert.deepEqual(result, { readable: 'élise@例え.example', subject: resource, link, frozen: true })
     })
   }
 })

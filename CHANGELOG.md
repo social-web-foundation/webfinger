@@ -10,6 +10,11 @@ the tagged release commits.
 
 ## [Unreleased]
 
+### Changed
+
+- Bundle the library and its dependencies with esbuild for browser tests,
+  including coverage of Unicode account URI decoding.
+
 ## [0.9.0] - 2026-10-16
 
 ### Added
