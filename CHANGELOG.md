@@ -10,6 +10,11 @@ the tagged release commits.
 
 ## [Unreleased]
 
+### Changed
+
+- Document `fromAcctUri()` in the README, consolidate the `webfinger()` API
+  documentation, and expand the API table of contents.
+
 ## [0.9.1] - 2026-10-16
 
 ### Changed

@@ -12,7 +12,10 @@ It supports RFC 7033.
 - [Usage](#usage)
   - [Browser usage](#browser-usage)
 - [API](#api)
+  - [webfinger(address, options?)](#webfingeraddress-options)
+  - [JRD](#jrd)
   - [toAcctUri(address)](#toaccturiaddress)
+  - [fromAcctUri(uri)](#fromaccturiuri)
 - [Contributing](#contributing)
   - [Testing](#testing)
 - [License](#license)
@@ -122,7 +125,37 @@ Empty strings, `null`, and other non-string inputs throw a `TypeError`.
 Missing separators, usernames, or hostnames throw an `Error`. Invalid hostnames
 that cannot be parsed by the `URL` constructor throw a `TypeError`.
 
-### webfinger(address)
+### fromAcctUri(uri)
+
+The named `fromAcctUri` export synchronously converts an `acct:` URI to a
+readable account address string without making a network request. It works
+in Node.js and browsers.
+
+The input must begin with the exact lowercase prefix `acct:` and contain a
+nonempty username and hostname separated by `@`. The last `@` is the
+separator; earlier `@` characters belong to the username. The username is
+percent-decoded using `decodeURIComponent()`, and Punycode hostname labels
+are converted to Unicode.
+
+| Input URI | Returned address |
+| --- | --- |
+| `acct:user1@foo.example` | `user1@foo.example` |
+| `acct:jos%C3%A9@xn--bcher-kva.example` | `josé@bücher.example` |
+| `acct:some%40name@foo.example` | `some@name@foo.example` |
+| `acct:user%2540name@foo.example` | `user%40name@foo.example` |
+
+Percent escapes in the username are decoded once. A literal `+` remains `+`.
+The hostname is not percent-decoded or parsed using the `URL` API; this
+function is a conversion helper rather than a complete account URI validator.
+Use [toAcctUri()](#toaccturiaddress) to encode an unescaped address in the
+other direction.
+
+Empty strings, `null`, and other non-string inputs throw a `TypeError`.
+A missing or differently cased `acct:` prefix, or a missing separator,
+username, or hostname, throws an `Error`. Malformed percent escapes or
+invalid UTF-8 percent sequences in the username throw a `URIError`.
+
+### webfinger(address, options?)
 
 Resolves to a `JRD` instance containing discovery data for `address`.
 
@@ -146,10 +179,8 @@ Discovery requests `https://<hostname>/.well-known/webfinger` with the resource
 in the query string. The response must have status 200 and contain JSON.
 XRD conversion and host-meta/LRDD fallback are not supported.
 
-### webfinger(address, options)
-
 The optional second argument is an object with `encode`, `rel`, and `fetch`
-properties.
+properties. It defaults to `{}`.
 The previous positional `rel` argument and three-argument signature are no
 longer supported. Move the relation into `options.rel` and pass any custom
 fetch function in the same object.
